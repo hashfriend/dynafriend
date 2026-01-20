@@ -86,7 +86,7 @@ export function VaultCard({ vault, price, position }: VaultCardProps) {
         {hasPosition && (
           <>
             <div className={styles.stat}>
-              <span className={styles.statLabel}>Your Position</span>
+              <span className={styles.statLabel}>Position</span>
               <span className={styles.statValue}>{userValue}</span>
             </div>
             <div className={styles.stat}>

@@ -1,0 +1,46 @@
+.trigger {
+  all: unset;
+  position: relative;
+  margin-left: var(--space-xs);
+  cursor: help;
+  font-size: var(--fs--2);
+  vertical-align: middle;
+  color: var(--color-text-dim);
+}
+
+.trigger:hover,
+.trigger:focus-visible {
+  opacity: 1;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + var(--space-xs));
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 220px;
+  padding: var(--space-sm);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  font-size: var(--fs--2);
+  color: var(--color-text-muted);
+  text-transform: none;
+  letter-spacing: normal;
+  line-height: 1.4;
+  text-align: left;
+  z-index: 10;
+}
+
+.trigger:hover .tooltip,
+.trigger:focus-visible .tooltip {
+  display: block;
+}
+
+.title {
+  display: block;
+  margin-bottom: var(--space-xs);
+  font-weight: 500;
+  color: var(--color-text);
+}

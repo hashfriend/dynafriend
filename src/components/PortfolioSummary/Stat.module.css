@@ -1,0 +1,38 @@
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.label {
+  font-size: var(--fs--1);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.value {
+  font-size: var(--fs-2);
+  font-weight: 300;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.valueMuted {
+  font-size: var(--fs-2);
+  font-weight: 300;
+  color: var(--color-text-dim);
+  letter-spacing: -0.02em;
+}
+
+.profit {
+  color: var(--color-profit);
+}
+
+@media (width >= 600px) {
+  .value,
+  .valueMuted {
+    font-size: var(--fs-3);
+  }
+}
