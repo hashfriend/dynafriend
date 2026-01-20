@@ -164,6 +164,27 @@ export function useUserPositions(vaults: VaultData[]) {
     }
   }, [isConnected, userAddress, vaults, balanceResults, fetchEvents])
 
+  // Auto-refresh when cache expires
+  useEffect(() => {
+    if (!cacheExpiresAt || !isConnected || vaultsWithPositions.length === 0)
+      return
+
+    const timeUntilExpiry = cacheExpiresAt - Date.now()
+    if (timeUntilExpiry <= 0) {
+      // Already expired, trigger refresh
+      fetchedRef.current = false
+      fetchEvents()
+      return
+    }
+
+    const timeout = setTimeout(() => {
+      fetchedRef.current = false
+      fetchEvents()
+    }, timeUntilExpiry)
+
+    return () => clearTimeout(timeout)
+  }, [cacheExpiresAt, isConnected, vaultsWithPositions.length, fetchEvents])
+
   // Combine results into positions
   const positions = useMemo(() => {
     const result: UserPosition[] = []
