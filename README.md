@@ -2,6 +2,14 @@
 
 Dashboard for viewing Singularity Finance's DynaVault vault positions.
 
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Data Flow](#data-flow)
+- [Calculations](#calculations)
+  - [Lifetime Profit](#lifetime-profit)
+  - [Personal APY](#personal-apy)
+- [Development](#development)
+
 ## Features
 
 - View all DynaVault vaults with TVL
