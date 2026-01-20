@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Skeleton } from '../Skeleton/Skeleton'
+import { Skeleton } from '@/components/Skeleton/Skeleton'
 import styles from './Stat.module.css'
 
 interface StatProps {

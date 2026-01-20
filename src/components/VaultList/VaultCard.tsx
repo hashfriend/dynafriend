@@ -1,9 +1,9 @@
-import type { UserPosition } from '../../hooks/useUserPositions'
-import type { VaultData } from '../../hooks/useVaultData'
-import { calculateApy } from '../../lib/apy'
-import { toUsdValue } from '../../lib/convert'
-import { formatApy, formatTokenAmount, formatUsd } from '../../lib/format'
-import { Skeleton } from '../Skeleton/Skeleton'
+import { Skeleton } from '@/components/Skeleton/Skeleton'
+import type { UserPosition } from '@/hooks/useUserPositions'
+import type { VaultData } from '@/hooks/useVaultData'
+import { calculateApy } from '@/lib/apy'
+import { toUsdValue } from '@/lib/convert'
+import { formatApy, formatTokenAmount, formatUsd } from '@/lib/format'
 import styles from './VaultCard.module.css'
 
 interface VaultCardProps {

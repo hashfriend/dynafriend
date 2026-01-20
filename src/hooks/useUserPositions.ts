@@ -2,16 +2,16 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import type { Address } from 'viem'
 import { useConnection, useReadContracts } from 'wagmi'
-import { dynavaultAbi } from '../abi/dynavault'
-import { VAULT_ADDRESSES } from '../config/vaults'
-import { fetchUserEvents } from '../lib/alchemy'
+import { dynavaultAbi } from '@/abi/dynavault'
+import { VAULT_ADDRESSES } from '@/config/vaults'
+import type { VaultData } from '@/hooks/useVaultData'
+import { fetchUserEvents } from '@/lib/alchemy'
 import {
   CACHE_TTL,
   type EventData,
   getCachedEvents,
   setCachedEvents
-} from '../lib/cache'
-import type { VaultData } from './useVaultData'
+} from '@/lib/cache'
 
 type ContractResult =
   | { status: 'success'; result: unknown }

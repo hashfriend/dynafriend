@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { UserPosition } from '../../hooks/useUserPositions'
-import { calculateApyFromUsd } from '../../lib/apy'
-import { toUsdValue } from '../../lib/convert'
+import type { UserPosition } from '@/hooks/useUserPositions'
+import { calculateApyFromUsd } from '@/lib/apy'
+import { toUsdValue } from '@/lib/convert'
 
 interface UseSummaryDataParams {
   positions: UserPosition[]

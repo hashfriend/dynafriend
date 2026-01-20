@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import type { Address } from 'viem'
 import { useReadContracts } from 'wagmi'
-import { dynavaultAbi } from '../abi/dynavault'
-import { erc20Abi } from '../abi/erc20'
-import { VAULT_ADDRESSES, VAULTS } from '../config/vaults'
+import { dynavaultAbi } from '@/abi/dynavault'
+import { erc20Abi } from '@/abi/erc20'
+import { VAULT_ADDRESSES, VAULTS } from '@/config/vaults'
 
 type ContractResult =
   | { status: 'success'; result: unknown }
