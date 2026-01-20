@@ -101,9 +101,7 @@ export async function fetchUserEvents(
     results[vault] = {
       deposited: 0n,
       withdrawn: 0n,
-      positionStartTime: null,
-      depositedInPosition: 0n,
-      withdrawnInPosition: 0n
+      cashFlows: []
     }
   }
 
@@ -124,103 +122,36 @@ export async function fetchUserEvents(
       withMetadata: true
     })
 
-    // Store withdrawal data with timestamps for position filtering
-    const withdrawalEvents: { timestamp: number; value: bigint }[] = []
     for (const tx of withdrawals) {
       const value = tx.rawContract?.value ? BigInt(tx.rawContract.value) : 0n
       results[vault].withdrawn += value
+      // Positive cash flow (money out of vault to user)
       if (tx.metadata?.blockTimestamp) {
         const timestamp = Math.floor(
           new Date(tx.metadata.blockTimestamp).getTime() / 1000
         )
-        withdrawalEvents.push({ timestamp, value })
+        results[vault].cashFlows.push({ amount: value, timestamp })
       }
     }
 
-    // Get all share transfers TO user (incoming)
+    // Get all share transfers TO user (mints from deposits)
     const sharesIn = await getAssetTransfers(alchemyEndpoint, {
       toAddress: userLower,
       contractAddresses: [vaultLower],
       withMetadata: true
     })
 
-    // Get all share transfers FROM user (outgoing - burns and transfers)
-    const sharesOut = await getAssetTransfers(alchemyEndpoint, {
-      fromAddress: userLower,
-      contractAddresses: [vaultLower],
-      withMetadata: true
-    })
-
-    // Build timeline of share balance changes to find current position start
-    interface ShareEvent {
-      timestamp: number
-      delta: bigint
-      hash: string
-      isDeposit: boolean
-    }
-
-    const shareEvents: ShareEvent[] = []
-
-    const getShareValue = (tx: AlchemyTransfer, decimals: number): bigint => {
-      if (tx.rawContract?.value) {
-        return BigInt(tx.rawContract.value)
-      }
-      if (tx.value !== null && tx.value !== undefined) {
-        return BigInt(Math.round(tx.value * 10 ** decimals))
-      }
-      return 0n
-    }
-
-    for (const tx of sharesIn) {
-      if (!tx.metadata?.blockTimestamp) continue
-      const timestamp = Math.floor(
-        new Date(tx.metadata.blockTimestamp).getTime() / 1000
-      )
-      const value = getShareValue(tx, vaultData.decimals)
-      const from = tx.from?.toLowerCase()
-      const isDeposit =
-        from === '0x0000000000000000000000000000000000000000' ||
-        from === vaultLower
-      shareEvents.push({ timestamp, delta: value, hash: tx.hash, isDeposit })
-    }
-
-    for (const tx of sharesOut) {
-      if (!tx.metadata?.blockTimestamp) continue
-      const timestamp = Math.floor(
-        new Date(tx.metadata.blockTimestamp).getTime() / 1000
-      )
-      const value = getShareValue(tx, vaultData.decimals)
-      shareEvents.push({ timestamp, delta: -value, hash: tx.hash, isDeposit: false })
-    }
-
-    shareEvents.sort((a, b) => a.timestamp - b.timestamp)
-
-    // Replay to find current position start (last time balance went 0 → positive)
-    let balance = 0n
-    let positionStartTime: number | null = null
-
-    for (const event of shareEvents) {
-      const prevBalance = balance
-      balance += event.delta
-      if (prevBalance <= 0n && balance > 0n) {
-        positionStartTime = event.timestamp
-      }
-    }
-
-    results[vault].positionStartTime = positionStartTime
-
-    // Calculate withdrawals in current position
-    for (const w of withdrawalEvents) {
-      if (positionStartTime !== null && w.timestamp >= positionStartTime) {
-        results[vault].withdrawnInPosition += w.value
-      }
-    }
-
     // Get deposit amounts from transaction receipts
-    for (const event of shareEvents) {
-      if (!event.isDeposit) continue
+    for (const tx of sharesIn) {
+      const from = tx.from?.toLowerCase()
+      const isDeposit = from === '0x0000000000000000000000000000000000000000'
+      if (!isDeposit) continue
 
-      const logs = await getTransactionReceipt(alchemyEndpoint, event.hash)
+      const timestamp = tx.metadata?.blockTimestamp
+        ? Math.floor(new Date(tx.metadata.blockTimestamp).getTime() / 1000)
+        : null
+
+      const logs = await getTransactionReceipt(alchemyEndpoint, tx.hash)
       for (const log of logs) {
         if (
           log.topics?.[0] === DEPOSIT_TOPIC &&
@@ -230,17 +161,17 @@ export async function fetchUserEvents(
           if (data && data.length >= 66) {
             const assets = BigInt(`0x${data.slice(2, 66)}`)
             results[vault].deposited += assets
-
-            if (
-              positionStartTime !== null &&
-              event.timestamp >= positionStartTime
-            ) {
-              results[vault].depositedInPosition += assets
+            // Negative cash flow (money into vault)
+            if (timestamp !== null) {
+              results[vault].cashFlows.push({ amount: -assets, timestamp })
             }
           }
         }
       }
     }
+
+    // Sort cash flows by timestamp
+    results[vault].cashFlows.sort((a, b) => a.timestamp - b.timestamp)
   }
 
   return results

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useConnection } from 'wagmi'
 import type { UserPosition } from '../../hooks/useUserPositions'
-import { toUsdValue } from '../../lib/calculations'
+import { calculateApyFromUsd } from '../../lib/apy'
+import { toUsdValue } from '../../lib/convert'
 import { formatApy, formatTimeRemaining, formatUsd } from '../../lib/format'
 import styles from './PortfolioSummary.module.css'
 
@@ -38,56 +39,35 @@ export function PortfolioSummary({
   const { totalValue, totalProfit, profitReady, portfolioApy } = useMemo(() => {
     let value = 0
     let profit = 0
-    let netInvestedInPositions = 0
     let allProfitsReady = true
-    let earliestPositionStart: number | null = null
+    const allCashFlows: { amount: number; timestamp: number }[] = []
 
     for (const position of positions) {
       const price = prices[position.vaultData.assetAddress.toLowerCase()]
-      if (price) {
-        value += toUsdValue(
-          position.currentValue,
+      if (!price) continue
+
+      value += toUsdValue(
+        position.currentValue,
+        position.vaultData.assetDecimals,
+        price
+      )
+
+      if (position.profit !== null) {
+        profit += toUsdValue(
+          position.profit,
           position.vaultData.assetDecimals,
           price
         )
-        if (position.profit !== null) {
-          profit += toUsdValue(
-            position.profit,
-            position.vaultData.assetDecimals,
-            price
-          )
-        } else {
-          allProfitsReady = false
-        }
-        // For APY: use net invested in current position
-        const netInvested =
-          position.depositedInPosition - position.withdrawnInPosition
-        if (netInvested > 0n) {
-          netInvestedInPositions += toUsdValue(
-            netInvested,
-            position.vaultData.assetDecimals,
-            price
-          )
-        }
-        if (
-          position.positionStartTime !== null &&
-          (earliestPositionStart === null ||
-            position.positionStartTime < earliestPositionStart)
-        ) {
-          earliestPositionStart = position.positionStartTime
-        }
+      } else {
+        allProfitsReady = false
       }
-    }
 
-    // Calculate portfolio APY based on current positions
-    let apy: number | null = null
-    if (netInvestedInPositions > 0 && earliestPositionStart !== null) {
-      const now = Math.floor(Date.now() / 1000)
-      const holdingPeriodDays = (now - earliestPositionStart) / 86400
-      if (holdingPeriodDays > 0) {
-        const positionProfit = value - netInvestedInPositions
-        const returnRate = positionProfit / netInvestedInPositions
-        apy = ((1 + returnRate) ** (365 / holdingPeriodDays) - 1) * 100
+      for (const cf of position.cashFlows) {
+        allCashFlows.push({
+          amount:
+            (Number(cf.amount) / 10 ** position.vaultData.assetDecimals) * price,
+          timestamp: cf.timestamp
+        })
       }
     }
 
@@ -95,7 +75,7 @@ export function PortfolioSummary({
       totalValue: value,
       totalProfit: profit,
       profitReady: allProfitsReady,
-      portfolioApy: apy
+      portfolioApy: calculateApyFromUsd(allCashFlows, value)
     }
   }, [positions, prices])
 

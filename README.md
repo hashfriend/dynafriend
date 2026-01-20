@@ -7,7 +7,7 @@ Dashboard for viewing Singularity Finance's DynaVault vault positions.
 - [Data Flow](#data-flow)
 - [Calculations](#calculations)
   - [Lifetime Profit](#lifetime-profit)
-  - [Personal APY](#personal-apy)
+  - [Personal APY (XIRR)](#personal-apy-xirr)
 - [Development](#development)
 
 ## Features
@@ -50,17 +50,20 @@ Where:
 - `totalDeposited` = sum of all Deposit event amounts
 - `totalWithdrawn` = sum of all asset transfers from vault to user
 
-### Personal APY
+### Personal APY (XIRR)
 
-APY is calculated per-position. A position starts when balance goes from 0 → positive (resets on full exit and re-entry).
+APY is calculated using XIRR (Extended Internal Rate of Return), which properly weights each cash flow by time.
 
 ```
-netInvestedInPosition = depositedInPosition - withdrawnInPosition
-positionProfit = currentValue - netInvestedInPosition
-holdingDays = (now - positionStartTime) / 86400
-returnRate = positionProfit / netInvestedInPosition
-APY = ((1 + returnRate) ^ (365 / holdingDays) - 1) × 100
+Solve for r where: Σ(cashFlow_i / (1 + r)^years_i) = 0
 ```
+
+Where:
+- Each deposit is a negative cash flow at its timestamp
+- Each withdrawal is a positive cash flow at its timestamp
+- Current position value is a final positive cash flow at now
+
+This handles any deposit/withdrawal pattern correctly, including multiple deposits, partial withdrawals, and exits/re-entries.
 
 ## Development
 

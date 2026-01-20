@@ -1,6 +1,11 @@
 const CACHE_KEY_PREFIX = 'dynavault_events_'
 export const CACHE_TTL = 1000 * 60 * 30 // 30 minutes
 
+export interface CashFlow {
+  amount: string // negative for deposits, positive for withdrawals
+  timestamp: number
+}
+
 interface CachedEventData {
   timestamp: number
   data: Record<
@@ -8,9 +13,7 @@ interface CachedEventData {
     {
       deposited: string
       withdrawn: string
-      positionStartTime: number | null
-      depositedInPosition: string
-      withdrawnInPosition: string
+      cashFlows: CashFlow[]
     }
   >
 }
@@ -20,9 +23,7 @@ export type EventData = Record<
   {
     deposited: bigint
     withdrawn: bigint
-    positionStartTime: number | null
-    depositedInPosition: bigint
-    withdrawnInPosition: bigint
+    cashFlows: { amount: bigint; timestamp: number }[]
   }
 >
 
@@ -51,9 +52,10 @@ export function getCachedEvents(userAddress: string): CacheResult | null {
       data[key] = {
         deposited: BigInt(value.deposited),
         withdrawn: BigInt(value.withdrawn),
-        positionStartTime: value.positionStartTime ?? null,
-        depositedInPosition: BigInt(value.depositedInPosition || '0'),
-        withdrawnInPosition: BigInt(value.withdrawnInPosition || '0')
+        cashFlows: (value.cashFlows || []).map((cf) => ({
+          amount: BigInt(cf.amount),
+          timestamp: cf.timestamp
+        }))
       }
     }
     return { data, expiresAt }
@@ -69,18 +71,17 @@ export function setCachedEvents(userAddress: string, data: EventData) {
       {
         deposited: string
         withdrawn: string
-        positionStartTime: number | null
-        depositedInPosition: string
-        withdrawnInPosition: string
+        cashFlows: CashFlow[]
       }
     > = {}
     for (const [key, value] of Object.entries(data)) {
       serializable[key] = {
         deposited: value.deposited.toString(),
         withdrawn: value.withdrawn.toString(),
-        positionStartTime: value.positionStartTime,
-        depositedInPosition: value.depositedInPosition.toString(),
-        withdrawnInPosition: value.withdrawnInPosition.toString()
+        cashFlows: value.cashFlows.map((cf) => ({
+          amount: cf.amount.toString(),
+          timestamp: cf.timestamp
+        }))
       }
     }
 

@@ -1,6 +1,7 @@
 import type { UserPosition } from '../../hooks/useUserPositions'
 import type { VaultData } from '../../hooks/useVaultData'
-import { calculatePersonalApy, toUsdValue } from '../../lib/calculations'
+import { calculateApy } from '../../lib/apy'
+import { toUsdValue } from '../../lib/convert'
 import { formatApy, formatTokenAmount, formatUsd } from '../../lib/format'
 import styles from './VaultCard.module.css'
 
@@ -28,25 +29,9 @@ export function VaultCard({ vault, price, position }: VaultCardProps) {
       ? toUsdValue(position.profit, vault.assetDecimals, price)
       : null
 
-  // APY based on current position (since last time balance went 0 → positive)
-  const netInvestedInPosition = hasPosition
-    ? position.depositedInPosition - position.withdrawnInPosition
-    : 0n
-  const positionProfit =
-    hasPosition && netInvestedInPosition > 0n
-      ? position.currentValue - netInvestedInPosition
-      : null
-
   const userApy =
-    hasPosition &&
-    positionProfit !== null &&
-    position.positionStartTime !== null &&
-    netInvestedInPosition > 0n
-      ? calculatePersonalApy(
-          positionProfit,
-          netInvestedInPosition,
-          position.positionStartTime
-        )
+    hasPosition && position.cashFlows.length > 0
+      ? calculateApy(position.cashFlows, position.currentValue, vault.assetDecimals)
       : null
 
   return (
