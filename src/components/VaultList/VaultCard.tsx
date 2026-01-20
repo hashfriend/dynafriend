@@ -1,7 +1,7 @@
 import type { UserPosition } from '../../hooks/useUserPositions'
 import type { VaultData } from '../../hooks/useVaultData'
-import { toUsdValue } from '../../lib/calculations'
-import { formatTokenAmount, formatUsd } from '../../lib/format'
+import { calculatePersonalApy, toUsdValue } from '../../lib/calculations'
+import { formatApy, formatTokenAmount, formatUsd } from '../../lib/format'
 import styles from './VaultCard.module.css'
 
 interface VaultCardProps {
@@ -26,6 +26,27 @@ export function VaultCard({ vault, price, position }: VaultCardProps) {
   const userProfit =
     hasPosition && price && position.profit !== null
       ? toUsdValue(position.profit, vault.assetDecimals, price)
+      : null
+
+  // APY based on current position (since last time balance went 0 → positive)
+  const netInvestedInPosition = hasPosition
+    ? position.depositedInPosition - position.withdrawnInPosition
+    : 0n
+  const positionProfit =
+    hasPosition && netInvestedInPosition > 0n
+      ? position.currentValue - netInvestedInPosition
+      : null
+
+  const userApy =
+    hasPosition &&
+    positionProfit !== null &&
+    position.positionStartTime !== null &&
+    netInvestedInPosition > 0n
+      ? calculatePersonalApy(
+          positionProfit,
+          netInvestedInPosition,
+          position.positionStartTime
+        )
       : null
 
   return (
@@ -82,6 +103,14 @@ export function VaultCard({ vault, price, position }: VaultCardProps) {
                 <span className={styles.statLabel}>Profit</span>
                 <span className={`${styles.statValue} ${styles.profit}`}>
                   {formatUsd(userProfit)}
+                </span>
+              </div>
+            )}
+            {userApy !== null && (
+              <div className={styles.stat}>
+                <span className={styles.statLabel}>APY</span>
+                <span className={`${styles.statValue} ${styles.profit}`}>
+                  {formatApy(userApy)}
                 </span>
               </div>
             )}

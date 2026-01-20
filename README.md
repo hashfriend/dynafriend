@@ -6,6 +6,7 @@ Dashboard for viewing Singularity Finance's DynaVault vault positions.
 
 - View all DynaVault vaults with TVL
 - Track personal positions with their profit
+- Show personal, actual APY
 
 ## Tech Stack
 
@@ -17,7 +18,6 @@ Dashboard for viewing Singularity Finance's DynaVault vault positions.
 
 ## Data Flow
 
-- Profit calculation from on-chain deposit/withdrawal history
 - 30-minute client-side caching for event data
 
 ```
@@ -27,6 +27,31 @@ Dashboard for viewing Singularity Finance's DynaVault vault positions.
 4. Profit calc    → Alchemy API (only for vaults with positions)
                     └─ getAssetTransfers → withdrawals
                     └─ getAssetTransfers + getTransactionReceipt → deposits
+```
+
+## Calculations
+
+### Lifetime Profit
+
+```
+profit = currentValue - (totalDeposited - totalWithdrawn)
+```
+
+Where:
+- `currentValue` = `maxWithdraw(user)` from vault contract
+- `totalDeposited` = sum of all Deposit event amounts
+- `totalWithdrawn` = sum of all asset transfers from vault to user
+
+### Personal APY
+
+APY is calculated per-position. A position starts when balance goes from 0 → positive (resets on full exit and re-entry).
+
+```
+netInvestedInPosition = depositedInPosition - withdrawnInPosition
+positionProfit = currentValue - netInvestedInPosition
+holdingDays = (now - positionStartTime) / 86400
+returnRate = positionProfit / netInvestedInPosition
+APY = ((1 + returnRate) ^ (365 / holdingDays) - 1) × 100
 ```
 
 ## Development

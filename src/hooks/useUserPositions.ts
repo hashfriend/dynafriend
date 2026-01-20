@@ -24,6 +24,9 @@ export interface UserPosition {
   totalDeposited: bigint
   totalWithdrawn: bigint
   profit: bigint | null
+  positionStartTime: number | null
+  depositedInPosition: bigint
+  withdrawnInPosition: bigint
 }
 
 export function useUserPositions(vaults: VaultData[]) {
@@ -224,7 +227,10 @@ export function useUserPositions(vaults: VaultData[]) {
           currentValue,
           totalDeposited,
           totalWithdrawn,
-          profit
+          profit,
+          positionStartTime: events?.positionStartTime ?? null,
+          depositedInPosition: events?.depositedInPosition ?? 0n,
+          withdrawnInPosition: events?.withdrawnInPosition ?? 0n
         })
       }
     }

@@ -3,10 +3,28 @@ export const CACHE_TTL = 1000 * 60 * 30 // 30 minutes
 
 interface CachedEventData {
   timestamp: number
-  data: Record<string, { deposited: string; withdrawn: string }>
+  data: Record<
+    string,
+    {
+      deposited: string
+      withdrawn: string
+      positionStartTime: number | null
+      depositedInPosition: string
+      withdrawnInPosition: string
+    }
+  >
 }
 
-export type EventData = Record<string, { deposited: bigint; withdrawn: bigint }>
+export type EventData = Record<
+  string,
+  {
+    deposited: bigint
+    withdrawn: bigint
+    positionStartTime: number | null
+    depositedInPosition: bigint
+    withdrawnInPosition: bigint
+  }
+>
 
 export interface CacheResult {
   data: EventData
@@ -32,7 +50,10 @@ export function getCachedEvents(userAddress: string): CacheResult | null {
     for (const [key, value] of Object.entries(parsed.data)) {
       data[key] = {
         deposited: BigInt(value.deposited),
-        withdrawn: BigInt(value.withdrawn)
+        withdrawn: BigInt(value.withdrawn),
+        positionStartTime: value.positionStartTime ?? null,
+        depositedInPosition: BigInt(value.depositedInPosition || '0'),
+        withdrawnInPosition: BigInt(value.withdrawnInPosition || '0')
       }
     }
     return { data, expiresAt }
@@ -45,12 +66,21 @@ export function setCachedEvents(userAddress: string, data: EventData) {
   try {
     const serializable: Record<
       string,
-      { deposited: string; withdrawn: string }
+      {
+        deposited: string
+        withdrawn: string
+        positionStartTime: number | null
+        depositedInPosition: string
+        withdrawnInPosition: string
+      }
     > = {}
     for (const [key, value] of Object.entries(data)) {
       serializable[key] = {
         deposited: value.deposited.toString(),
-        withdrawn: value.withdrawn.toString()
+        withdrawn: value.withdrawn.toString(),
+        positionStartTime: value.positionStartTime,
+        depositedInPosition: value.depositedInPosition.toString(),
+        withdrawnInPosition: value.withdrawnInPosition.toString()
       }
     }
 

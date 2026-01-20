@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useConnection } from 'wagmi'
 import type { UserPosition } from '../../hooks/useUserPositions'
 import { toUsdValue } from '../../lib/calculations'
-import { formatTimeRemaining, formatUsd } from '../../lib/format'
+import { formatApy, formatTimeRemaining, formatUsd } from '../../lib/format'
 import styles from './PortfolioSummary.module.css'
 
 interface PortfolioSummaryProps {
@@ -35,10 +35,12 @@ export function PortfolioSummary({
     return () => clearInterval(interval)
   }, [cacheExpiresAt])
 
-  const { totalValue, totalProfit, profitReady } = useMemo(() => {
+  const { totalValue, totalProfit, profitReady, portfolioApy } = useMemo(() => {
     let value = 0
     let profit = 0
+    let netInvestedInPositions = 0
     let allProfitsReady = true
+    let earliestPositionStart: number | null = null
 
     for (const position of positions) {
       const price = prices[position.vaultData.assetAddress.toLowerCase()]
@@ -57,13 +59,43 @@ export function PortfolioSummary({
         } else {
           allProfitsReady = false
         }
+        // For APY: use net invested in current position
+        const netInvested =
+          position.depositedInPosition - position.withdrawnInPosition
+        if (netInvested > 0n) {
+          netInvestedInPositions += toUsdValue(
+            netInvested,
+            position.vaultData.assetDecimals,
+            price
+          )
+        }
+        if (
+          position.positionStartTime !== null &&
+          (earliestPositionStart === null ||
+            position.positionStartTime < earliestPositionStart)
+        ) {
+          earliestPositionStart = position.positionStartTime
+        }
+      }
+    }
+
+    // Calculate portfolio APY based on current positions
+    let apy: number | null = null
+    if (netInvestedInPositions > 0 && earliestPositionStart !== null) {
+      const now = Math.floor(Date.now() / 1000)
+      const holdingPeriodDays = (now - earliestPositionStart) / 86400
+      if (holdingPeriodDays > 0) {
+        const positionProfit = value - netInvestedInPositions
+        const returnRate = positionProfit / netInvestedInPositions
+        apy = ((1 + returnRate) ** (365 / holdingPeriodDays) - 1) * 100
       }
     }
 
     return {
       totalValue: value,
       totalProfit: profit,
-      profitReady: allProfitsReady
+      profitReady: allProfitsReady,
+      portfolioApy: apy
     }
   }, [positions, prices])
 
@@ -89,6 +121,18 @@ export function PortfolioSummary({
           {hasData ? (
             <span className={`${styles.value} ${styles.profit}`}>
               {profitReady ? formatUsd(totalProfit) : '—'}
+            </span>
+          ) : showSkeleton ? (
+            <div className={`${styles.skeleton} ${styles.skeletonValue}`} />
+          ) : (
+            <span className={styles.valueMuted}>—</span>
+          )}
+        </div>
+        <div className={styles.stat}>
+          <span className={styles.label}>APY</span>
+          {hasData ? (
+            <span className={`${styles.value} ${styles.profit}`}>
+              {portfolioApy !== null ? formatApy(portfolioApy) : '—'}
             </span>
           ) : showSkeleton ? (
             <div className={`${styles.skeleton} ${styles.skeletonValue}`} />
