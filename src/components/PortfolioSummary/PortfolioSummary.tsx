@@ -1,26 +1,27 @@
+import { useMemo } from 'react'
 import { useConnection } from 'wagmi'
-import type { UserPosition } from '../../hooks/useUserPositions'
+import { useTokenPrices } from '../../hooks/useTokenPrices'
+import { useUserPositions } from '../../hooks/useUserPositions'
+import { useVaultData } from '../../hooks/useVaultData'
 import { formatApy, formatTimeRemaining, formatUsd } from '../../lib/format'
 import { InfoTooltip } from '../InfoTooltip/InfoTooltip'
 import styles from './PortfolioSummary.module.css'
 import { Stat } from './Stat'
 import { useSummaryData } from './useSummaryData'
 
-interface PortfolioSummaryProps {
-  positions: UserPosition[]
-  isLoading: boolean
-  prices: Record<string, number>
-  cacheExpiresAt: number | null
-}
-
-export function PortfolioSummary({
-  positions,
-  isLoading,
-  prices,
-  cacheExpiresAt
-}: PortfolioSummaryProps) {
+export function PortfolioSummary() {
   const { status } = useConnection()
   const isConnected = status === 'connected'
+
+  const { vaults } = useVaultData()
+
+  const assetAddresses = useMemo(
+    () => vaults.map((v) => v.assetAddress),
+    [vaults]
+  )
+
+  const { prices } = useTokenPrices(assetAddresses)
+  const { positions, isLoading, cacheExpiresAt } = useUserPositions(vaults)
 
   const {
     totalValue,

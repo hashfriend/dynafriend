@@ -1,20 +1,13 @@
 import { useMemo } from 'react'
 import { VAULT_ADDRESSES } from '../../config/vaults'
-import type { UserPosition } from '../../hooks/useUserPositions'
-import type { VaultData } from '../../hooks/useVaultData'
+import { useTokenPrices } from '../../hooks/useTokenPrices'
+import { useUserPositions } from '../../hooks/useUserPositions'
+import { useVaultData } from '../../hooks/useVaultData'
 import { toUsdValue } from '../../lib/convert'
 import { Skeleton } from '../Skeleton/Skeleton'
 import { VaultCard } from './VaultCard'
 import cardStyles from './VaultCard.module.css'
 import styles from './VaultList.module.css'
-
-interface VaultListProps {
-  vaults: VaultData[]
-  positions: UserPosition[]
-  isLoading: boolean
-  error: Error | null
-  prices: Record<string, number>
-}
 
 function SkeletonCard() {
   return (
@@ -37,13 +30,17 @@ function SkeletonCard() {
   )
 }
 
-export function VaultList({
-  vaults,
-  positions,
-  isLoading,
-  error,
-  prices
-}: VaultListProps) {
+export function VaultList() {
+  const { vaults, isLoading, error } = useVaultData()
+
+  const assetAddresses = useMemo(
+    () => vaults.map((v) => v.assetAddress),
+    [vaults]
+  )
+
+  const { prices } = useTokenPrices(assetAddresses)
+  const { positions } = useUserPositions(vaults)
+
   const positionsByVault = new Map(positions.map((p) => [p.vaultAddress, p]))
 
   const sortedVaults = useMemo(() => {
