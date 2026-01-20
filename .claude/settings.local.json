@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.singularityfinance.ai)",
+      "WebFetch(domain:basescan.org)",
+      "WebFetch(domain:base.blockscout.com)",
+      "Bash(bun:*)",
+      "Bash(cat:*)",
+      "Bash(tree:*)"
+    ]
+  }
+}
