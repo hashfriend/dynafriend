@@ -24,7 +24,7 @@
 
 .name {
   font-size: var(--fs--1);
-  color: var(--color-text-dim);
+  color: var(--color-text-muted);
 }
 
 .hasPosition::before {
@@ -77,7 +77,7 @@
 
 .statLabel {
   font-size: var(--fs--2);
-  color: var(--color-text-faint);
+  color: var(--color-text-dim);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -87,39 +87,13 @@
   color: var(--color-text);
 }
 
+.statValueMuted {
+  font-size: var(--fs-0);
+  color: var(--color-text-muted);
+}
+
 .profit {
   color: var(--color-profit);
-}
-
-.skeleton {
-  background: var(--color-surface);
-  border-radius: 2px;
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-.skeletonText {
-  height: 1em;
-  width: 80px;
-}
-
-.skeletonTextWide {
-  height: 1em;
-  width: 120px;
-}
-
-.skeletonValue {
-  height: 1em;
-  width: 60px;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.7;
-  }
 }
 
 @media (width >= 600px) {

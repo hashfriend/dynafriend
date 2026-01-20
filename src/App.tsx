@@ -30,7 +30,7 @@ export function App() {
   return (
     <div className={styles.app}>
       <header className={styles.header}>
-        <h1 className={styles.title}>DynaVault Dashboard</h1>
+        <h1 className={styles.title}>DynaFriend</h1>
         <ConnectButton />
       </header>
       <main className={styles.main}>

@@ -1,6 +1,7 @@
 import { VAULT_ADDRESSES } from '../../config/vaults'
 import type { UserPosition } from '../../hooks/useUserPositions'
 import type { VaultData } from '../../hooks/useVaultData'
+import { Skeleton } from '../Skeleton/Skeleton'
 import { VaultCard } from './VaultCard'
 import cardStyles from './VaultCard.module.css'
 import styles from './VaultList.module.css'
@@ -17,23 +18,17 @@ function SkeletonCard() {
   return (
     <div className={cardStyles.card}>
       <div className={cardStyles.header}>
-        <div
-          className={`${cardStyles.skeleton} ${cardStyles.skeletonTextWide}`}
-        />
-        <div className={`${cardStyles.skeleton} ${cardStyles.skeletonText}`} />
+        <Skeleton variant="textWide" />
+        <Skeleton variant="text" />
       </div>
       <div className={cardStyles.body}>
         <div className={cardStyles.stat}>
           <span className={cardStyles.statLabel}>Asset</span>
-          <div
-            className={`${cardStyles.skeleton} ${cardStyles.skeletonValue}`}
-          />
+          <Skeleton variant="value" />
         </div>
         <div className={cardStyles.stat}>
           <span className={cardStyles.statLabel}>TVL</span>
-          <div
-            className={`${cardStyles.skeleton} ${cardStyles.skeletonValue}`}
-          />
+          <Skeleton variant="value" />
         </div>
       </div>
     </div>

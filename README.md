@@ -1,4 +1,4 @@
-# DynaVault Dashboard
+# DynaFriend
 
 Dashboard for viewing Singularity Finance's DynaVault vault positions.
 

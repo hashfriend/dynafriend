@@ -4,6 +4,7 @@ import type { UserPosition } from '../../hooks/useUserPositions'
 import { calculateApyFromUsd } from '../../lib/apy'
 import { toUsdValue } from '../../lib/convert'
 import { formatApy, formatTimeRemaining, formatUsd } from '../../lib/format'
+import { Skeleton } from '../Skeleton/Skeleton'
 import styles from './PortfolioSummary.module.css'
 
 interface PortfolioSummaryProps {
@@ -91,7 +92,7 @@ export function PortfolioSummary({
           {hasData ? (
             <span className={styles.value}>{formatUsd(totalValue)}</span>
           ) : showSkeleton ? (
-            <div className={`${styles.skeleton} ${styles.skeletonValue}`} />
+            <Skeleton variant="valueLg" />
           ) : (
             <span className={styles.valueMuted}>—</span>
           )}
@@ -103,7 +104,7 @@ export function PortfolioSummary({
               {profitReady ? formatUsd(totalProfit) : '—'}
             </span>
           ) : showSkeleton ? (
-            <div className={`${styles.skeleton} ${styles.skeletonValue}`} />
+            <Skeleton variant="valueLg" />
           ) : (
             <span className={styles.valueMuted}>—</span>
           )}
@@ -115,7 +116,7 @@ export function PortfolioSummary({
               {portfolioApy !== null ? formatApy(portfolioApy) : '—'}
             </span>
           ) : showSkeleton ? (
-            <div className={`${styles.skeleton} ${styles.skeletonValue}`} />
+            <Skeleton variant="valueLg" />
           ) : (
             <span className={styles.valueMuted}>—</span>
           )}

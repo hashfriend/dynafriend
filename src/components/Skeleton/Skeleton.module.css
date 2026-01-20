@@ -1,0 +1,33 @@
+.skeleton {
+  background: var(--color-surface);
+  border-radius: 2px;
+  animation: pulse 1.5s ease-in-out infinite;
+  height: 1em;
+}
+
+.text {
+  width: 80px;
+}
+
+.textWide {
+  width: 120px;
+}
+
+.value {
+  width: 60px;
+}
+
+.valueLg {
+  height: 1.5em;
+  width: 100px;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}

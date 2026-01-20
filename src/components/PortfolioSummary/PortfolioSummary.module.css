@@ -21,7 +21,7 @@
 
 .label {
   font-size: var(--fs--1);
-  color: var(--color-text-faint);
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -36,7 +36,7 @@
 .valueMuted {
   font-size: var(--fs-2);
   font-weight: 300;
-  color: var(--color-text-faint);
+  color: var(--color-text-dim);
   letter-spacing: -0.02em;
 }
 
@@ -48,32 +48,11 @@
   color: var(--color-loss);
 }
 
-.skeleton {
-  background: var(--color-bg);
-  border-radius: 2px;
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-.skeletonValue {
-  height: 1.5em;
-  width: 100px;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
 .cache {
   margin-top: var(--space-md);
   text-align: center;
   font-size: var(--fs--2);
-  color: var(--color-text-faint);
+  color: var(--color-text-dim);
   letter-spacing: 0.05em;
 }
 

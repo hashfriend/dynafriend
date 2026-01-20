@@ -37,13 +37,13 @@
   text-align: center;
   border-top: 1px solid var(--color-surface);
   color: var(--color-text-dim);
-  font-size: var(--fs--1);
+  font-size: var(--fs--2);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .footer a {
-  color: var(--color-accent);
+  color: var(--color-text-muted);
 }
 
 @media (width >= 768px) {
