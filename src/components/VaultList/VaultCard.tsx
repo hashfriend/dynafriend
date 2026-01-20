@@ -1,10 +1,7 @@
 import type { UserPosition } from '../../hooks/useUserPositions'
 import type { VaultData } from '../../hooks/useVaultData'
-import {
-  formatTokenAmount,
-  formatUsd,
-  toUsdValue
-} from '../../lib/calculations'
+import { toUsdValue } from '../../lib/calculations'
+import { formatTokenAmount, formatUsd } from '../../lib/format'
 import styles from './VaultCard.module.css'
 
 interface VaultCardProps {

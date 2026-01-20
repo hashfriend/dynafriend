@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useConnection } from 'wagmi'
 import type { UserPosition } from '../../hooks/useUserPositions'
-import { formatUsd, toUsdValue } from '../../lib/calculations'
+import { toUsdValue } from '../../lib/calculations'
+import { formatTimeRemaining, formatUsd } from '../../lib/format'
 import styles from './PortfolioSummary.module.css'
 
 interface PortfolioSummaryProps {
@@ -9,14 +10,6 @@ interface PortfolioSummaryProps {
   isLoading: boolean
   prices: Record<string, number>
   cacheExpiresAt: number | null
-}
-
-function formatTimeRemaining(ms: number): string {
-  if (ms <= 0) return '0:00'
-  const totalSeconds = Math.floor(ms / 1000)
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = totalSeconds % 60
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
 export function PortfolioSummary({
@@ -106,7 +99,7 @@ export function PortfolioSummary({
       </div>
       {showCache && (
         <div className={styles.cache}>
-          profit cached · {formatTimeRemaining(timeRemaining)}
+          profit data cached · {formatTimeRemaining(timeRemaining)}
         </div>
       )}
     </div>
