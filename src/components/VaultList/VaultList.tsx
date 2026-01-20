@@ -1,6 +1,8 @@
+import { useMemo } from 'react'
 import { VAULT_ADDRESSES } from '../../config/vaults'
 import type { UserPosition } from '../../hooks/useUserPositions'
 import type { VaultData } from '../../hooks/useVaultData'
+import { toUsdValue } from '../../lib/convert'
 import { Skeleton } from '../Skeleton/Skeleton'
 import { VaultCard } from './VaultCard'
 import cardStyles from './VaultCard.module.css'
@@ -44,6 +46,16 @@ export function VaultList({
 }: VaultListProps) {
   const positionsByVault = new Map(positions.map((p) => [p.vaultAddress, p]))
 
+  const sortedVaults = useMemo(() => {
+    return [...vaults].sort((a, b) => {
+      const priceA = prices[a.assetAddress.toLowerCase()] ?? 0
+      const priceB = prices[b.assetAddress.toLowerCase()] ?? 0
+      const tvlA = toUsdValue(a.totalAssets, a.assetDecimals, priceA)
+      const tvlB = toUsdValue(b.totalAssets, b.assetDecimals, priceB)
+      return tvlB - tvlA
+    })
+  }, [vaults, prices])
+
   if (error) {
     return (
       <div className={styles.container}>
@@ -81,7 +93,7 @@ export function VaultList({
     <div className={styles.container}>
       <h2 className={styles.title}>DynaVaults</h2>
       <div className={styles.grid}>
-        {vaults.map((vault) => (
+        {sortedVaults.map((vault) => (
           <VaultCard
             key={vault.address}
             vault={vault}
