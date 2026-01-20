@@ -31,7 +31,11 @@ export function VaultCard({ vault, price, position }: VaultCardProps) {
 
   const userApy =
     hasPosition && position.cashFlows.length > 0
-      ? calculateApy(position.cashFlows, position.currentValue, vault.assetDecimals)
+      ? calculateApy(
+          position.cashFlows,
+          position.currentValue,
+          vault.assetDecimals
+        )
       : null
 
   return (

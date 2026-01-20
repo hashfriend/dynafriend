@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import type { Address } from 'viem'
 import { useConnection, useReadContracts } from 'wagmi'
 import { dynavaultAbi } from '../abi/dynavault'
@@ -27,26 +28,33 @@ export interface UserPosition {
   cashFlows: { amount: bigint; timestamp: number }[]
 }
 
+async function fetchEventsWithCache(
+  userAddress: Address,
+  vaults: VaultData[],
+  vaultsWithPositions: Address[]
+): Promise<EventData> {
+  // Check localStorage cache first
+  const cached = getCachedEvents(userAddress)
+  if (cached) {
+    return cached.data
+  }
+
+  // Fetch fresh data
+  const results = await fetchUserEvents(
+    userAddress,
+    vaults,
+    vaultsWithPositions
+  )
+
+  // Persist to localStorage
+  setCachedEvents(userAddress, results)
+
+  return results
+}
+
 export function useUserPositions(vaults: VaultData[]) {
   const { address: userAddress, status } = useConnection()
   const isConnected = status === 'connected'
-  const [depositData, setDepositData] = useState<EventData>({})
-  const [eventsReady, setEventsReady] = useState(false)
-  const [isLoadingEvents, setIsLoadingEvents] = useState(false)
-  const [cacheExpiresAt, setCacheExpiresAt] = useState<number | null>(null)
-  const fetchedRef = useRef(false)
-  const lastUserRef = useRef<Address | undefined>(undefined)
-
-  // Reset when user changes
-  useEffect(() => {
-    if (userAddress !== lastUserRef.current) {
-      lastUserRef.current = userAddress
-      fetchedRef.current = false
-      setEventsReady(false)
-      setDepositData({})
-      setCacheExpiresAt(null)
-    }
-  }, [userAddress])
 
   // Get share balances for all vaults
   const balanceContracts = useMemo(
@@ -114,77 +122,37 @@ export function useUserPositions(vaults: VaultData[]) {
     return result
   }, [balanceResults])
 
-  const fetchEvents = useCallback(async () => {
-    if (!userAddress || fetchedRef.current || vaults.length === 0) return
-    if (vaultsWithPositions.length === 0) {
-      // No positions, mark as ready with empty data
-      setEventsReady(true)
-      return
-    }
+  // Stable key for vaults with positions
+  const vaultsKey = vaultsWithPositions.join(',')
 
-    fetchedRef.current = true
+  // Get cached data for initialData
+  const cachedEvents = userAddress ? getCachedEvents(userAddress) : null
 
-    // Check cache first
-    const cached = getCachedEvents(userAddress)
-    if (cached) {
-      setDepositData(cached.data)
-      setEventsReady(true)
-      setCacheExpiresAt(cached.expiresAt)
-      return
-    }
-
-    setIsLoadingEvents(true)
-
-    try {
-      const results = await fetchUserEvents(
-        userAddress,
-        vaults,
-        vaultsWithPositions
-      )
-      setDepositData(results)
-      setEventsReady(true)
-      setCachedEvents(userAddress, results)
-      setCacheExpiresAt(Date.now() + CACHE_TTL)
-    } catch (error) {
-      console.error('Failed to fetch events:', error)
-    } finally {
-      setIsLoadingEvents(false)
-    }
-  }, [userAddress, vaults, vaultsWithPositions])
-
-  // Trigger event fetching after balance results are ready
-  useEffect(() => {
-    if (
+  const {
+    data: eventData = {},
+    isLoading: isLoadingEvents,
+    dataUpdatedAt
+  } = useQuery({
+    queryKey: ['userEvents', userAddress, vaultsKey],
+    queryFn: () => {
+      if (!userAddress) throw new Error('No user address')
+      return fetchEventsWithCache(userAddress, vaults, vaultsWithPositions)
+    },
+    enabled:
       isConnected &&
-      userAddress &&
+      !!userAddress &&
       vaults.length > 0 &&
-      balanceResults &&
-      !fetchedRef.current
-    ) {
-      fetchEvents()
-    }
-  }, [isConnected, userAddress, vaults, balanceResults, fetchEvents])
+      vaultsWithPositions.length > 0,
+    staleTime: CACHE_TTL,
+    gcTime: CACHE_TTL,
+    initialData: cachedEvents?.data,
+    initialDataUpdatedAt: cachedEvents
+      ? cachedEvents.expiresAt - CACHE_TTL
+      : undefined
+  })
 
-  // Auto-refresh when cache expires
-  useEffect(() => {
-    if (!cacheExpiresAt || !isConnected || vaultsWithPositions.length === 0)
-      return
-
-    const timeUntilExpiry = cacheExpiresAt - Date.now()
-    if (timeUntilExpiry <= 0) {
-      // Already expired, trigger refresh
-      fetchedRef.current = false
-      fetchEvents()
-      return
-    }
-
-    const timeout = setTimeout(() => {
-      fetchedRef.current = false
-      fetchEvents()
-    }, timeUntilExpiry)
-
-    return () => clearTimeout(timeout)
-  }, [cacheExpiresAt, isConnected, vaultsWithPositions.length, fetchEvents])
+  const cacheExpiresAt =
+    dataUpdatedAt && dataUpdatedAt > 0 ? dataUpdatedAt + CACHE_TTL : null
 
   // Combine results into positions
   const positions = useMemo(() => {
@@ -193,12 +161,15 @@ export function useUserPositions(vaults: VaultData[]) {
       return result
     }
 
+    const eventsReady =
+      vaultsWithPositions.length === 0 || Object.keys(eventData).length > 0
+
     for (let i = 0; i < VAULT_ADDRESSES.length; i++) {
       const vault = VAULT_ADDRESSES[i]
       const balanceResult = balanceResults[i]
       const maxWithdrawResult = maxWithdrawResults[i]
       const vaultData = vaults.find((v) => v.address === vault)
-      const events = depositData[vault]
+      const events = eventData[vault]
 
       if (!vaultData) continue
 
@@ -232,7 +203,13 @@ export function useUserPositions(vaults: VaultData[]) {
     }
 
     return result
-  }, [balanceResults, maxWithdrawResults, vaults, depositData, eventsReady])
+  }, [
+    balanceResults,
+    maxWithdrawResults,
+    vaults,
+    eventData,
+    vaultsWithPositions
+  ])
 
   return {
     positions,

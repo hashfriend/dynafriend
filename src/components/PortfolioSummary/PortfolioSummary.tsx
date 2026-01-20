@@ -66,7 +66,8 @@ export function PortfolioSummary({
       for (const cf of position.cashFlows) {
         allCashFlows.push({
           amount:
-            (Number(cf.amount) / 10 ** position.vaultData.assetDecimals) * price,
+            (Number(cf.amount) / 10 ** position.vaultData.assetDecimals) *
+            price,
           timestamp: cf.timestamp
         })
       }
