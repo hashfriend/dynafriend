@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { UserPosition } from '@/hooks/useUserPositions'
 import type { VaultData } from '@/hooks/useVaultData'
 import { calculateApy } from '@/lib/apy'
@@ -13,6 +14,8 @@ interface VaultCardProps {
 }
 
 export function VaultCard({ vault, price, position }: VaultCardProps) {
+  const [showNative, setShowNative] = useState(false)
+
   const tvlUsd = price
     ? formatUsd(toUsdValue(vault.totalAssets, vault.assetDecimals, price))
     : '—'
@@ -20,15 +23,25 @@ export function VaultCard({ vault, price, position }: VaultCardProps) {
   const hasPosition = position && position.shares > 0n
   const eventsLoading = hasPosition && position.profit === null
 
-  const userValue = hasPosition
-    ? price
+  const toggleDisplay = () => setShowNative((prev) => !prev)
+
+  const userValueUsd =
+    hasPosition && price
       ? formatUsd(toUsdValue(position.currentValue, vault.assetDecimals, price))
-      : formatTokenAmount(position.currentValue, vault.assetDecimals, 4)
+      : null
+
+  const userValueNative = hasPosition
+    ? `${formatTokenAmount(position.currentValue, vault.assetDecimals, 4)} ${vault.assetSymbol}`
     : null
 
-  const userProfit =
+  const userProfitUsd =
     hasPosition && price && position.profit !== null
-      ? toUsdValue(position.profit, vault.assetDecimals, price)
+      ? formatUsd(toUsdValue(position.profit, vault.assetDecimals, price))
+      : null
+
+  const userProfitNative =
+    hasPosition && position.profit !== null
+      ? `${formatTokenAmount(position.profit, vault.assetDecimals, 4)} ${vault.assetSymbol}`
       : null
 
   const userApy =
@@ -79,12 +92,17 @@ export function VaultCard({ vault, price, position }: VaultCardProps) {
         <Stat label="TVL" value={tvlUsd} variant="muted" />
         {hasPosition && (
           <>
-            <Stat label="Position" value={userValue} />
+            <Stat
+              label="Position"
+              value={showNative ? userValueNative : (userValueUsd ?? userValueNative)}
+              onClick={price ? toggleDisplay : undefined}
+            />
             <Stat
               label="Profit"
-              value={formatUsd(userProfit ?? 0)}
+              value={showNative ? userProfitNative : (userProfitUsd ?? '—')}
               variant="profit"
               isLoading={eventsLoading}
+              onClick={price ? toggleDisplay : undefined}
             />
             <Stat
               label="APY"
