@@ -7,7 +7,7 @@ import { VAULT_ADDRESSES, VAULTS } from '@/config/vaults'
 import {
   getCachedVaultData,
   setCachedVaultData,
-  type VaultDataCache
+  VAULT_CACHE_TTL
 } from '@/lib/cache-vaults'
 
 type ContractResult =
@@ -39,8 +39,10 @@ const vaultContracts = VAULT_ADDRESSES.flatMap((address) => [
 
 export function useVaultData() {
   // Get cached data on initial render
-  const [cachedVaults] = useState<VaultDataCache[] | null>(
-    () => getCachedVaultData()?.data ?? null
+  const [initialCache] = useState(() => getCachedVaultData())
+  const cachedVaults = initialCache?.data ?? null
+  const [cacheExpiresAt, setCacheExpiresAt] = useState<number | null>(
+    initialCache?.expiresAt ?? null
   )
 
   const {
@@ -147,6 +149,7 @@ export function useVaultData() {
   useEffect(() => {
     if (vaults.length > 0) {
       setCachedVaultData(vaults)
+      setCacheExpiresAt(Date.now() + VAULT_CACHE_TTL)
     }
   }, [vaults])
 
@@ -167,6 +170,7 @@ export function useVaultData() {
     vaults: resolvedVaults,
     isLoading:
       (isVaultLoading || isAssetLoading) && resolvedVaults.length === 0,
-    error: vaultError || assetError
+    error: vaultError || assetError,
+    cacheExpiresAt
   }
 }

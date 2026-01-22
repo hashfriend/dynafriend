@@ -1,5 +1,5 @@
 const VAULT_DATA_CACHE_KEY = 'dynavault_data'
-const CACHE_TTL = 1000 * 60 * 30 // 30 minutes
+export const VAULT_CACHE_TTL = 1000 * 60 * 30 // 30 minutes
 
 interface CachedVaultData {
   timestamp: number
@@ -41,7 +41,7 @@ export function getCachedVaultData(): VaultCacheResult | null {
     if (!cached) return null
 
     const parsed: CachedVaultData = JSON.parse(cached)
-    const expiresAt = parsed.timestamp + CACHE_TTL
+    const expiresAt = parsed.timestamp + VAULT_CACHE_TTL
 
     if (Date.now() > expiresAt) {
       localStorage.removeItem(VAULT_DATA_CACHE_KEY)

@@ -23,7 +23,7 @@
 .empty {
   padding: var(--space-lg);
   text-align: center;
-  color: var(--color-text-faint);
+  color: var(--color-text-dim);
   font-size: var(--fs--1);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -31,4 +31,11 @@
 
 .error {
   color: var(--color-error);
+}
+
+.footer {
+  margin-top: var(--space-sm);
+  font-size: var(--fs--2);
+  color: var(--color-text-dim);
+  text-align: right;
 }

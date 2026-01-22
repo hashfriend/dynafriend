@@ -1,10 +1,11 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Skeleton } from '@/components/Skeleton/Skeleton'
 import { VAULT_ADDRESSES } from '@/config/vaults'
 import { useTokenPrices } from '@/hooks/useTokenPrices'
 import { useUserPositions } from '@/hooks/useUserPositions'
 import { useVaultData } from '@/hooks/useVaultData'
 import { toUsdValue } from '@/lib/convert'
+import { formatTimeRemaining } from '@/lib/format'
 import { VaultCard } from './VaultCard'
 import cardStyles from './VaultCard.module.css'
 import styles from './VaultList.module.css'
@@ -31,7 +32,23 @@ function SkeletonCard() {
 }
 
 export function VaultList() {
-  const { vaults, isLoading, error } = useVaultData()
+  const { vaults, isLoading, error, cacheExpiresAt } = useVaultData()
+
+  // Track time remaining for cache
+  const [timeRemaining, setTimeRemaining] = useState(
+    cacheExpiresAt ? cacheExpiresAt - Date.now() : 0
+  )
+
+  useEffect(() => {
+    if (!cacheExpiresAt) return
+    setTimeRemaining(cacheExpiresAt - Date.now())
+    const interval = setInterval(() => {
+      setTimeRemaining(cacheExpiresAt - Date.now())
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [cacheExpiresAt])
+
+  const isCacheActive = cacheExpiresAt !== null && timeRemaining > 0
 
   const assetAddresses = useMemo(
     () => vaults.map((v) => v.assetAddress),
@@ -99,6 +116,13 @@ export function VaultList() {
           />
         ))}
       </div>
+      {isCacheActive && (
+        <div className={styles.footer}>
+          Vault data cached for {formatTimeRemaining(timeRemaining)} min.
+          <br />
+          Profit data automatically refreshed at least every 30 seconds.
+        </div>
+      )}
     </div>
   )
 }
