@@ -1,6 +1,6 @@
 import type { Address } from 'viem'
 import type { VaultData } from '@/hooks/useVaultData'
-import type { EventData } from '@/lib/cache'
+import type { EventData } from '@/lib/cache-events'
 
 // Deposit event topic: keccak256("Deposit(address,address,uint256,uint256)")
 const DEPOSIT_TOPIC =

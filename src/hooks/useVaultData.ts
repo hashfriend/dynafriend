@@ -1,9 +1,14 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Address } from 'viem'
 import { useReadContracts } from 'wagmi'
 import { dynavaultAbi } from '@/abi/dynavault'
 import { erc20Abi } from '@/abi/erc20'
 import { VAULT_ADDRESSES, VAULTS } from '@/config/vaults'
+import {
+  getCachedVaultData,
+  setCachedVaultData,
+  type VaultDataCache
+} from '@/lib/cache-vaults'
 
 type ContractResult =
   | { status: 'success'; result: unknown }
@@ -33,6 +38,11 @@ const vaultContracts = VAULT_ADDRESSES.flatMap((address) => [
 ])
 
 export function useVaultData() {
+  // Get cached data on initial render
+  const [cachedVaults] = useState<VaultDataCache[] | null>(
+    () => getCachedVaultData()?.data ?? null
+  )
+
   const {
     data: vaultResults,
     isLoading: isVaultLoading,
@@ -133,9 +143,30 @@ export function useVaultData() {
     return result
   }, [vaultResults, assetResults])
 
+  // Cache vaults when fresh data is loaded
+  useEffect(() => {
+    if (vaults.length > 0) {
+      setCachedVaultData(vaults)
+    }
+  }, [vaults])
+
+  // Return cached data while loading fresh data
+  const resolvedVaults = useMemo(() => {
+    if (vaults.length > 0) return vaults
+    if (cachedVaults && cachedVaults.length > 0) {
+      return cachedVaults.map((v) => ({
+        ...v,
+        address: v.address as Address,
+        assetAddress: v.assetAddress as Address
+      }))
+    }
+    return vaults
+  }, [vaults, cachedVaults])
+
   return {
-    vaults,
-    isLoading: isVaultLoading || isAssetLoading,
+    vaults: resolvedVaults,
+    isLoading:
+      (isVaultLoading || isAssetLoading) && resolvedVaults.length === 0,
     error: vaultError || assetError
   }
 }

@@ -11,7 +11,7 @@ import {
   type EventData,
   getCachedEvents,
   setCachedEvents
-} from '@/lib/cache'
+} from '@/lib/cache-events'
 
 type ContractResult =
   | { status: 'success'; result: unknown }
