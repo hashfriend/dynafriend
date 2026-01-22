@@ -1,9 +1,9 @@
-import { Skeleton } from '@/components/Skeleton/Skeleton'
 import type { UserPosition } from '@/hooks/useUserPositions'
 import type { VaultData } from '@/hooks/useVaultData'
 import { calculateApy } from '@/lib/apy'
 import { toUsdValue } from '@/lib/convert'
 import { formatApy, formatTokenAmount, formatUsd } from '@/lib/format'
+import { Stat } from './Stat'
 import styles from './VaultCard.module.css'
 
 interface VaultCardProps {
@@ -75,40 +75,23 @@ export function VaultCard({ vault, price, position }: VaultCardProps) {
         <span className={styles.name}>{vault.name}</span>
       </div>
       <div className={styles.body}>
-        <div className={styles.stat}>
-          <span className={styles.statLabel}>Asset</span>
-          <span className={styles.statValueMuted}>{vault.assetSymbol}</span>
-        </div>
-        <div className={styles.stat}>
-          <span className={styles.statLabel}>TVL</span>
-          <span className={styles.statValueMuted}>{tvlUsd}</span>
-        </div>
+        <Stat label="Asset" value={vault.assetSymbol} variant="muted" />
+        <Stat label="TVL" value={tvlUsd} variant="muted" />
         {hasPosition && (
           <>
-            <div className={styles.stat}>
-              <span className={styles.statLabel}>Position</span>
-              <span className={styles.statValue}>{userValue}</span>
-            </div>
-            <div className={styles.stat}>
-              <span className={styles.statLabel}>Profit</span>
-              <span className={`${styles.statValue} ${styles.profit}`}>
-                {eventsLoading ? (
-                  <Skeleton variant="value" />
-                ) : (
-                  formatUsd(userProfit ?? 0)
-                )}
-              </span>
-            </div>
-            <div className={styles.stat}>
-              <span className={styles.statLabel}>APY</span>
-              <span className={`${styles.statValue} ${styles.profit}`}>
-                {eventsLoading ? (
-                  <Skeleton variant="value" />
-                ) : (
-                  formatApy(userApy ?? 0)
-                )}
-              </span>
-            </div>
+            <Stat label="Position" value={userValue} />
+            <Stat
+              label="Profit"
+              value={formatUsd(userProfit ?? 0)}
+              variant="profit"
+              isLoading={eventsLoading}
+            />
+            <Stat
+              label="APY"
+              value={formatApy(userApy ?? 0)}
+              variant="profit"
+              isLoading={eventsLoading}
+            />
           </>
         )}
       </div>

@@ -39,12 +39,12 @@ export function PortfolioSummary() {
     <div className={styles.container}>
       <div className={styles.stats}>
         <Stat
-          label="Your Positions"
+          label="All Positions"
           value={hasData ? formatUsd(totalValue) : null}
           isLoading={showSkeleton}
         />
         <Stat
-          label="Your Profit"
+          label="Total Profit"
           value={hasData && profitReady ? formatUsd(totalProfit) : null}
           isLoading={showSkeleton}
           isProfit
@@ -52,10 +52,10 @@ export function PortfolioSummary() {
         <Stat
           label={
             <>
-              Your APY
-              <InfoTooltip title="Your Personal APY">
-                Calculated using XIRR (Extended Internal Rate of Return), which
-                weights each deposit and withdrawal by time.
+              Total APY
+              <InfoTooltip title="Your Personal Total APY">
+                Calculated using XIRR (Extended Internal Rate of Return),
+                weighting each deposit and withdrawal by time.
                 {isConnected &&
                   isCacheActive &&
                   ` Underlying transaction data cached for ${formatTimeRemaining(timeRemaining)} min.`}

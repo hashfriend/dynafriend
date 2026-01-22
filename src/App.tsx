@@ -16,6 +16,16 @@ export function App() {
       </main>
       <footer className={styles.footer}>
         <p>
+          Created by{' '}
+          <a
+            href="https://hashfriend.eth.limo"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            hashfriend.eth
+          </a>
+        </p>
+        <p>
           Powered by{' '}
           <a
             href="https://www.singularityfinance.ai"
