@@ -23,6 +23,7 @@ Dashboard for viewing Singularity Finance's DynaVault vault positions.
 - wagmi v3 + viem + RainbowKit
 - Alchemy API (event fetching)
 - DefiLlama API (token prices)
+- Bun
 
 ## Data Flow
 

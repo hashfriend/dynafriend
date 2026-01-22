@@ -63,6 +63,7 @@
 
 .body {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-lg);
   align-items: center;
   justify-content: flex-start;
