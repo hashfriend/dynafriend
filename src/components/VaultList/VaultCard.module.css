@@ -1,6 +1,6 @@
 .card {
   background: var(--color-bg);
-  padding: var(--space-md) var(--space-lg);
+  padding: var(--space-md);
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-sm);
@@ -25,18 +25,6 @@
 .name {
   font-size: var(--fs--1);
   color: var(--color-text-muted);
-}
-
-.hasPosition::before {
-  content: '';
-  position: absolute;
-  left: -1em;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0.4em;
-  height: 0.4em;
-  border-radius: 50%;
-  background: var(--color-profit);
 }
 
 .link {
