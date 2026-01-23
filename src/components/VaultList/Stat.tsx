@@ -28,7 +28,11 @@ export function Stat({
     <div className={styles.stat}>
       <span className={styles.label}>{label}</span>
       {isClickable ? (
-        <button type="button" className={`${valueClass} ${styles.clickable}`} onClick={onClick}>
+        <button
+          type="button"
+          className={`${valueClass} ${styles.clickable}`}
+          onClick={onClick}
+        >
           {isLoading ? <Skeleton variant="value" /> : value}
         </button>
       ) : (

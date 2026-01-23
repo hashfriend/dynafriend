@@ -94,7 +94,9 @@ export function VaultCard({ vault, price, position }: VaultCardProps) {
           <>
             <Stat
               label="Position"
-              value={showNative ? userValueNative : (userValueUsd ?? userValueNative)}
+              value={
+                showNative ? userValueNative : (userValueUsd ?? userValueNative)
+              }
               onClick={price ? toggleDisplay : undefined}
             />
             <Stat
