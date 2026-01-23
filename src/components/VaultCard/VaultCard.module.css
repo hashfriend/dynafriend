@@ -1,6 +1,49 @@
 .card {
   background: var(--color-bg);
   padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+
+.caret {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  padding-left: 0;
+  margin: 0;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 1.5em;
+    height: 1.5em;
+  }
+}
+
+.caret:hover {
+  color: var(--color-text);
+}
+
+.caretExpanded {
+  transform: rotate(90deg);
+}
+
+.content {
+  flex: 1;
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-sm);
@@ -59,7 +102,7 @@
 }
 
 @media (width >= 600px) {
-  .card {
+  .content {
     grid-template-columns: 1fr auto;
     gap: var(--space-md);
   }

@@ -130,7 +130,11 @@ export async function fetchUserEvents(
         const timestamp = Math.floor(
           new Date(tx.metadata.blockTimestamp).getTime() / 1000
         )
-        results[vault].cashFlows.push({ amount: value, timestamp })
+        results[vault].cashFlows.push({
+          amount: value,
+          timestamp,
+          txHash: tx.hash
+        })
       }
     }
 
@@ -163,7 +167,11 @@ export async function fetchUserEvents(
             results[vault].deposited += assets
             // Negative cash flow (money into vault)
             if (timestamp !== null) {
-              results[vault].cashFlows.push({ amount: -assets, timestamp })
+              results[vault].cashFlows.push({
+                amount: -assets,
+                timestamp,
+                txHash: tx.hash
+              })
             }
           }
         }

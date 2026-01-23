@@ -1,13 +1,13 @@
 import { useMemo } from 'react'
 import { useConnection } from 'wagmi'
 import { InfoTooltip } from '@/components/InfoTooltip/InfoTooltip'
+import { useSummaryData } from '@/hooks/useSummaryData'
 import { useTokenPrices } from '@/hooks/useTokenPrices'
 import { useUserPositions } from '@/hooks/useUserPositions'
 import { useVaultData } from '@/hooks/useVaultData'
 import { formatApy, formatTimeRemaining, formatUsd } from '@/lib/format'
 import styles from './PortfolioSummary.module.css'
 import { Stat } from './Stat'
-import { useSummaryData } from './useSummaryData'
 
 export function PortfolioSummary() {
   const { status } = useConnection()

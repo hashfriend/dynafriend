@@ -1,35 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Skeleton } from '@/components/Skeleton/Skeleton'
+import { SkeletonCard, VaultCard } from '@/components/VaultCard'
 import { VAULT_ADDRESSES } from '@/config/vaults'
 import { useTokenPrices } from '@/hooks/useTokenPrices'
 import { useUserPositions } from '@/hooks/useUserPositions'
 import { useVaultData } from '@/hooks/useVaultData'
 import { toUsdValue } from '@/lib/convert'
 import { formatTimeRemaining } from '@/lib/format'
-import { VaultCard } from './VaultCard'
-import cardStyles from './VaultCard.module.css'
 import styles from './VaultList.module.css'
-
-function SkeletonCard() {
-  return (
-    <div className={cardStyles.card}>
-      <div className={cardStyles.header}>
-        <Skeleton variant="textWide" />
-        <Skeleton variant="text" />
-      </div>
-      <div className={cardStyles.body}>
-        <div className={cardStyles.stat}>
-          <span className={cardStyles.statLabel}>Asset</span>
-          <Skeleton variant="value" />
-        </div>
-        <div className={cardStyles.stat}>
-          <span className={cardStyles.statLabel}>TVL</span>
-          <Skeleton variant="value" />
-        </div>
-      </div>
-    </div>
-  )
-}
 
 export function VaultList() {
   const { vaults, isLoading, error, cacheExpiresAt } = useVaultData()

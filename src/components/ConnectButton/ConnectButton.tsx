@@ -4,7 +4,7 @@ export function ConnectButton() {
   return (
     <RainbowConnectButton
       showBalance={false}
-      accountStatus={{ smallScreen: 'avatar', largeScreen: 'full' }}
+      accountStatus={{ smallScreen: 'address', largeScreen: 'full' }}
     />
   )
 }

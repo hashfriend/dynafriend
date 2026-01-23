@@ -4,6 +4,7 @@ export const CACHE_TTL = 1000 * 60 * 30 // 30 minutes
 export interface CashFlow {
   amount: string // negative for deposits, positive for withdrawals
   timestamp: number
+  txHash: string
 }
 
 interface CachedEventData {
@@ -23,7 +24,7 @@ export type EventData = Record<
   {
     deposited: bigint
     withdrawn: bigint
-    cashFlows: { amount: bigint; timestamp: number }[]
+    cashFlows: { amount: bigint; timestamp: number; txHash: string }[]
   }
 >
 
@@ -54,7 +55,8 @@ export function getCachedEvents(userAddress: string): CacheResult | null {
         withdrawn: BigInt(value.withdrawn),
         cashFlows: (value.cashFlows || []).map((cf) => ({
           amount: BigInt(cf.amount),
-          timestamp: cf.timestamp
+          timestamp: cf.timestamp,
+          txHash: cf.txHash
         }))
       }
     }
@@ -80,7 +82,8 @@ export function setCachedEvents(userAddress: string, data: EventData) {
         withdrawn: value.withdrawn.toString(),
         cashFlows: value.cashFlows.map((cf) => ({
           amount: cf.amount.toString(),
-          timestamp: cf.timestamp
+          timestamp: cf.timestamp,
+          txHash: cf.txHash
         }))
       }
     }

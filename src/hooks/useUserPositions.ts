@@ -25,7 +25,7 @@ export interface UserPosition {
   totalDeposited: bigint
   totalWithdrawn: bigint
   profit: bigint | null
-  cashFlows: { amount: bigint; timestamp: number }[]
+  cashFlows: { amount: bigint; timestamp: number; txHash: string }[]
 }
 
 async function fetchEventsWithCache(
