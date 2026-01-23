@@ -1,25 +1,15 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit'
-import {
-  baseAccount,
-  injectedWallet,
-  metaMaskWallet,
-  rabbyWallet
-} from '@rainbow-me/rainbowkit/wallets'
 import { http } from 'viem'
 import { base } from 'wagmi/chains'
 
-const alchemyEndpoint = import.meta.env.VITE_ALCHEMY_API_ENDPOINT
+const alchemyEndpoint = import.meta.env.VITE_ALCHEMY_API_ENDPOINT || ''
+const walletConnectProjectId =
+  import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || ''
 
 export const config = getDefaultConfig({
-  appName: 'DynaVault Dashboard',
-  projectId: 'disabled',
+  appName: 'DynaFriend',
+  projectId: walletConnectProjectId,
   chains: [base],
-  wallets: [
-    {
-      groupName: 'Popular',
-      wallets: [injectedWallet, metaMaskWallet, rabbyWallet, baseAccount]
-    }
-  ],
   transports: {
     [base.id]: http(alchemyEndpoint)
   }

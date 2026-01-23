@@ -15,7 +15,8 @@ const theme = darkTheme({
   accentColor: '#ff6b35',
   accentColorForeground: '#0a0a0a',
   borderRadius: 'none',
-  fontStack: 'system'
+  fontStack: 'system',
+  overlayBlur: 'small'
 })
 
 theme.colors.modalBackground = '#0a0a0a'
@@ -29,7 +30,7 @@ createRoot(rootElement).render(
   <StrictMode>
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider theme={theme}>
+        <RainbowKitProvider theme={theme} modalSize="compact">
           <App />
         </RainbowKitProvider>
       </QueryClientProvider>
