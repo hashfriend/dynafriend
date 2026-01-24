@@ -1,44 +1,38 @@
+import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
-import type { Address } from 'viem'
-import { useReadContracts } from 'wagmi'
-import { dynavaultAbi } from '@/abi/dynavault'
+import { usePublicClient, useReadContracts } from 'wagmi'
 import { erc20Abi } from '@/abi/erc20'
-import { VAULT_ADDRESSES, VAULTS } from '@/config/vaults'
+import { VAULT_ADDRESSES } from '@/config/vaults'
 import {
   getCachedVaultData,
   setCachedVaultData,
   VAULT_CACHE_TTL
 } from '@/lib/cache-vaults'
+import {
+  type ContractResult,
+  enrichVaultsWithApys,
+  extractAssetAddresses,
+  fetchVaultApys,
+  parseVaultData,
+  resolveCachedVaults,
+  type VaultData,
+  vaultContracts
+} from '@/lib/dynavault'
 
-type ContractResult =
-  | { status: 'success'; result: unknown }
-  | { status: 'failure'; error: Error }
+export type { VaultData }
 
-export interface VaultData {
-  address: Address
-  name: string
-  symbol: string
-  decimals: number
-  assetAddress: Address
-  assetSymbol: string
-  assetDecimals: number
-  totalAssets: bigint
-  totalSupply: bigint
-  externalUrl: string
+type ApyMap = Record<string, number | null>
+const emptyApys: ApyMap = {}
+
+interface UseVaultDataResult {
+  vaults: VaultData[]
+  isLoading: boolean
+  error: Error | null
+  cacheExpiresAt: number | null
 }
 
-// Static contracts - defined outside component to prevent recreation
-const vaultContracts = VAULT_ADDRESSES.flatMap((address) => [
-  { address, abi: dynavaultAbi, functionName: 'name' as const },
-  { address, abi: dynavaultAbi, functionName: 'symbol' as const },
-  { address, abi: dynavaultAbi, functionName: 'decimals' as const },
-  { address, abi: dynavaultAbi, functionName: 'asset' as const },
-  { address, abi: dynavaultAbi, functionName: 'totalAssets' as const },
-  { address, abi: dynavaultAbi, functionName: 'totalSupply' as const }
-])
-
-export function useVaultData() {
-  // Get cached data on initial render
+export function useVaultData(): UseVaultDataResult {
+  const publicClient = usePublicClient()
   const [initialCache] = useState(() => getCachedVaultData())
   const cachedVaults = initialCache?.data ?? null
   const [cacheExpiresAt, setCacheExpiresAt] = useState<number | null>(
@@ -51,31 +45,18 @@ export function useVaultData() {
     error: vaultError
   } = useReadContracts({
     contracts: vaultContracts,
-    query: {
-      staleTime: 60000,
-      refetchInterval: false
-    }
+    query: { staleTime: 60000, refetchInterval: false }
   }) as {
     data: ContractResult[] | undefined
     isLoading: boolean
     error: Error | null
   }
 
-  // Extract asset addresses from vault results
-  const assetAddresses = useMemo(() => {
-    const addresses: Address[] = []
-    if (!vaultResults) return addresses
+  const assetAddresses = useMemo(
+    () => extractAssetAddresses(vaultResults),
+    [vaultResults]
+  )
 
-    for (let i = 0; i < VAULT_ADDRESSES.length; i++) {
-      const assetResult = vaultResults[i * 6 + 3]
-      if (assetResult?.status === 'success') {
-        addresses.push(assetResult.result as Address)
-      }
-    }
-    return addresses
-  }, [vaultResults])
-
-  // Memoize asset contracts
   const assetContracts = useMemo(
     () =>
       assetAddresses.flatMap((address) => [
@@ -102,74 +83,44 @@ export function useVaultData() {
     error: Error | null
   }
 
-  // Memoize combined vault data
-  const vaults = useMemo(() => {
-    const result: VaultData[] = []
-    if (!vaultResults || !assetResults) return result
+  const baseVaults = useMemo(
+    () => parseVaultData(vaultResults, assetResults),
+    [vaultResults, assetResults]
+  )
 
-    for (let i = 0; i < VAULT_ADDRESSES.length; i++) {
-      const nameResult = vaultResults[i * 6]
-      const symbolResult = vaultResults[i * 6 + 1]
-      const decimalsResult = vaultResults[i * 6 + 2]
-      const assetResult = vaultResults[i * 6 + 3]
-      const totalAssetsResult = vaultResults[i * 6 + 4]
-      const totalSupplyResult = vaultResults[i * 6 + 5]
+  const resolvedVaults = useMemo(
+    () => resolveCachedVaults(baseVaults, cachedVaults),
+    [baseVaults, cachedVaults]
+  )
 
-      const assetSymbolResult = assetResults[i * 2]
-      const assetDecimalsResult = assetResults[i * 2 + 1]
+  // Fetch native APYs
+  const { data: apys } = useQuery<ApyMap>({
+    queryKey: ['vaultApys', VAULT_ADDRESSES.join(',')],
+    queryFn: () => {
+      if (!publicClient) return emptyApys
+      return fetchVaultApys(publicClient, VAULT_ADDRESSES)
+    },
+    enabled: !!publicClient,
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000
+  })
 
-      if (
-        nameResult?.status === 'success' &&
-        symbolResult?.status === 'success' &&
-        decimalsResult?.status === 'success' &&
-        assetResult?.status === 'success' &&
-        totalAssetsResult?.status === 'success' &&
-        totalSupplyResult?.status === 'success' &&
-        assetSymbolResult?.status === 'success' &&
-        assetDecimalsResult?.status === 'success'
-      ) {
-        result.push({
-          address: VAULT_ADDRESSES[i],
-          name: nameResult.result as string,
-          symbol: symbolResult.result as string,
-          decimals: decimalsResult.result as number,
-          assetAddress: assetResult.result as Address,
-          assetSymbol: assetSymbolResult.result as string,
-          assetDecimals: assetDecimalsResult.result as number,
-          totalAssets: totalAssetsResult.result as bigint,
-          totalSupply: totalSupplyResult.result as bigint,
-          externalUrl: VAULTS[i].externalUrl
-        })
-      }
-    }
-    return result
-  }, [vaultResults, assetResults])
+  const vaults = useMemo(
+    () => enrichVaultsWithApys(resolvedVaults, apys ?? emptyApys),
+    [resolvedVaults, apys]
+  )
 
-  // Cache vaults when fresh data is loaded
+  // Cache vaults with all data
   useEffect(() => {
-    if (vaults.length > 0) {
+    if (vaults.length > 0 && vaults.some((v) => v.apy !== null)) {
       setCachedVaultData(vaults)
       setCacheExpiresAt(Date.now() + VAULT_CACHE_TTL)
     }
   }, [vaults])
 
-  // Return cached data while loading fresh data
-  const resolvedVaults = useMemo(() => {
-    if (vaults.length > 0) return vaults
-    if (cachedVaults && cachedVaults.length > 0) {
-      return cachedVaults.map((v) => ({
-        ...v,
-        address: v.address as Address,
-        assetAddress: v.assetAddress as Address
-      }))
-    }
-    return vaults
-  }, [vaults, cachedVaults])
-
   return {
-    vaults: resolvedVaults,
-    isLoading:
-      (isVaultLoading || isAssetLoading) && resolvedVaults.length === 0,
+    vaults,
+    isLoading: (isVaultLoading || isAssetLoading) && vaults.length === 0,
     error: vaultError || assetError,
     cacheExpiresAt
   }

@@ -1,7 +1,8 @@
+import type { JSX } from 'react'
 import { Skeleton } from '@/components/Skeleton/Skeleton'
 import styles from './VaultCard.module.css'
 
-export function SkeletonCard() {
+export function SkeletonCard(): JSX.Element {
   return (
     <div className={styles.card}>
       <div className={styles.main}>

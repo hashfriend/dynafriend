@@ -1,3 +1,4 @@
+import type { JSX } from 'react'
 import { useMemo } from 'react'
 import { useConnection } from 'wagmi'
 import { InfoTooltip } from '@/components/InfoTooltip/InfoTooltip'
@@ -9,7 +10,7 @@ import { formatApy, formatTimeRemaining, formatUsd } from '@/lib/format'
 import styles from './PortfolioSummary.module.css'
 import { Stat } from './Stat'
 
-export function PortfolioSummary() {
+export function PortfolioSummary(): JSX.Element {
   const { status } = useConnection()
   const isConnected = status === 'connected'
 

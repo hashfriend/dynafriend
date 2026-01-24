@@ -1,62 +1,29 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import type { Address } from 'viem'
 import { useConnection, useReadContracts } from 'wagmi'
 import { dynavaultAbi } from '@/abi/dynavault'
 import { VAULT_ADDRESSES } from '@/config/vaults'
-import type { VaultData } from '@/hooks/useVaultData'
-import { fetchUserEvents } from '@/lib/alchemy'
+import { getCachedEvents } from '@/lib/cache-events'
+import type { ContractResult, VaultData } from '@/lib/dynavault'
 import {
+  buildUserPositions,
   CACHE_TTL,
-  type EventData,
-  getCachedEvents,
-  setCachedEvents
-} from '@/lib/cache-events'
+  extractVaultsWithPositions,
+  fetchEventsWithCache,
+  type UserPosition
+} from '@/lib/positions'
 
-type ContractResult =
-  | { status: 'success'; result: unknown }
-  | { status: 'failure'; error: Error }
-
-export interface UserPosition {
-  vaultAddress: Address
-  vaultData: VaultData
-  shares: bigint
-  currentValue: bigint
-  totalDeposited: bigint
-  totalWithdrawn: bigint
-  profit: bigint | null
-  cashFlows: { amount: bigint; timestamp: number; txHash: string }[]
+interface UseUserPositionsResult {
+  positions: UserPosition[]
+  isLoading: boolean
+  hasPositions: boolean
+  cacheExpiresAt: number | null
 }
 
-async function fetchEventsWithCache(
-  userAddress: Address,
-  vaults: VaultData[],
-  vaultsWithPositions: Address[]
-): Promise<EventData> {
-  // Check localStorage cache first
-  const cached = getCachedEvents(userAddress)
-  if (cached) {
-    return cached.data
-  }
-
-  // Fetch fresh data
-  const results = await fetchUserEvents(
-    userAddress,
-    vaults,
-    vaultsWithPositions
-  )
-
-  // Persist to localStorage
-  setCachedEvents(userAddress, results)
-
-  return results
-}
-
-export function useUserPositions(vaults: VaultData[]) {
+export function useUserPositions(vaults: VaultData[]): UseUserPositionsResult {
   const { address: userAddress, status } = useConnection()
   const isConnected = status === 'connected'
 
-  // Get share balances for all vaults
   const balanceContracts = useMemo(
     () =>
       VAULT_ADDRESSES.map((address) => ({
@@ -81,7 +48,6 @@ export function useUserPositions(vaults: VaultData[]) {
       isLoading: boolean
     }
 
-  // Get maxWithdraw for each vault
   const maxWithdrawContracts = useMemo(
     () =>
       VAULT_ADDRESSES.map((address) => ({
@@ -106,26 +72,12 @@ export function useUserPositions(vaults: VaultData[]) {
       isLoading: boolean
     }
 
-  // Vaults where user has shares (for event fetching)
-  const vaultsWithPositions = useMemo(() => {
-    if (!balanceResults) return []
-    const result: Address[] = []
-    for (let i = 0; i < VAULT_ADDRESSES.length; i++) {
-      const balanceResult = balanceResults[i]
-      if (
-        balanceResult?.status === 'success' &&
-        (balanceResult.result as bigint) > 0n
-      ) {
-        result.push(VAULT_ADDRESSES[i])
-      }
-    }
-    return result
-  }, [balanceResults])
+  const vaultsWithPositions = useMemo(
+    () => extractVaultsWithPositions(balanceResults, VAULT_ADDRESSES),
+    [balanceResults]
+  )
 
-  // Stable key for vaults with positions
   const vaultsKey = vaultsWithPositions.join(',')
-
-  // Get cached data for initialData
   const cachedEvents = userAddress ? getCachedEvents(userAddress) : null
 
   const {
@@ -154,62 +106,18 @@ export function useUserPositions(vaults: VaultData[]) {
   const cacheExpiresAt =
     dataUpdatedAt && dataUpdatedAt > 0 ? dataUpdatedAt + CACHE_TTL : null
 
-  // Combine results into positions
-  const positions = useMemo(() => {
-    const result: UserPosition[] = []
-    if (!balanceResults || !maxWithdrawResults || vaults.length === 0) {
-      return result
-    }
-
-    const eventsReady =
-      vaultsWithPositions.length === 0 || Object.keys(eventData).length > 0
-
-    for (let i = 0; i < VAULT_ADDRESSES.length; i++) {
-      const vault = VAULT_ADDRESSES[i]
-      const balanceResult = balanceResults[i]
-      const maxWithdrawResult = maxWithdrawResults[i]
-      const vaultData = vaults.find((v) => v.address === vault)
-      const events = eventData[vault]
-
-      if (!vaultData) continue
-
-      const shares =
-        balanceResult?.status === 'success'
-          ? (balanceResult.result as bigint)
-          : 0n
-
-      const currentValue =
-        maxWithdrawResult?.status === 'success'
-          ? (maxWithdrawResult.result as bigint)
-          : 0n
-
-      const totalDeposited = events?.deposited ?? 0n
-      const totalWithdrawn = events?.withdrawn ?? 0n
-      const netInvested = totalDeposited - totalWithdrawn
-      const profit = eventsReady ? currentValue - netInvested : null
-
-      if (shares > 0n) {
-        result.push({
-          vaultAddress: vault,
-          vaultData,
-          shares,
-          currentValue,
-          totalDeposited,
-          totalWithdrawn,
-          profit,
-          cashFlows: events?.cashFlows ?? []
-        })
-      }
-    }
-
-    return result
-  }, [
-    balanceResults,
-    maxWithdrawResults,
-    vaults,
-    eventData,
-    vaultsWithPositions
-  ])
+  const positions = useMemo(
+    () =>
+      buildUserPositions({
+        balanceResults,
+        maxWithdrawResults,
+        vaults,
+        eventData,
+        vaultsWithPositions,
+        vaultAddresses: VAULT_ADDRESSES
+      }),
+    [balanceResults, maxWithdrawResults, vaults, eventData, vaultsWithPositions]
+  )
 
   return {
     positions,

@@ -22,7 +22,12 @@ async function fetchTokenPrices(
   return priceMap
 }
 
-export function useTokenPrices(addresses: Address[]) {
+interface UseTokenPricesResult {
+  prices: Record<string, number>
+  isLoading: boolean
+}
+
+export function useTokenPrices(addresses: Address[]): UseTokenPricesResult {
   const sortedKey = [...addresses]
     .map((a) => a.toLowerCase())
     .sort()

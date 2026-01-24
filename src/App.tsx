@@ -1,9 +1,10 @@
+import type { JSX } from 'react'
 import { ConnectButton } from '@/components/ConnectButton/ConnectButton'
 import { PortfolioSummary } from '@/components/PortfolioSummary/PortfolioSummary'
 import { VaultList } from '@/components/VaultList/VaultList'
 import styles from './App.module.css'
 
-export function App() {
+export function App(): JSX.Element {
   return (
     <div className={styles.app}>
       <header className={styles.header}>

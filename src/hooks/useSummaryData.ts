@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { UserPosition } from '@/hooks/useUserPositions'
 import { calculateApyFromUsd } from '@/lib/apy'
 import { toUsdValue } from '@/lib/convert'
+import type { UserPosition } from '@/lib/positions'
 
 interface UseSummaryDataParams {
   positions: UserPosition[]
@@ -9,11 +9,20 @@ interface UseSummaryDataParams {
   cacheExpiresAt: number | null
 }
 
+interface UseSummaryDataResult {
+  totalValue: number
+  totalProfit: number
+  profitReady: boolean
+  portfolioApy: number | null
+  timeRemaining: number
+  isCacheActive: boolean
+}
+
 export function useSummaryData({
   positions,
   prices,
   cacheExpiresAt
-}: UseSummaryDataParams) {
+}: UseSummaryDataParams): UseSummaryDataResult {
   const [timeRemaining, setTimeRemaining] = useState(0)
 
   useEffect(() => {

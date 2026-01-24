@@ -1,5 +1,6 @@
+import type { JSX } from 'react'
 import { ExternalLinkIcon } from '@/components/icons'
-import { formatTokenAmount } from '@/lib/format'
+import { formatDate, formatTokenAmount, shortenHash } from '@/lib/format'
 import styles from './TxList.module.css'
 
 interface CashFlow {
@@ -14,19 +15,11 @@ interface TxListProps {
   assetSymbol: string
 }
 
-function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  })
-}
-
-function shortenHash(hash: string): string {
-  return `${hash.slice(0, 6)}…${hash.slice(-4)}`
-}
-
-export function TxList({ cashFlows, assetDecimals, assetSymbol }: TxListProps) {
+export function TxList({
+  cashFlows,
+  assetDecimals,
+  assetSymbol
+}: TxListProps): JSX.Element {
   return (
     <div className={styles.wrapper}>
       <table className={styles.table}>

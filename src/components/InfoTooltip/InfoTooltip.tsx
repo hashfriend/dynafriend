@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { JSX, ReactNode } from 'react'
 import { InfoIcon } from '@/components/icons'
 import styles from './InfoTooltip.module.css'
 
@@ -7,7 +7,10 @@ interface InfoTooltipProps {
   children: ReactNode
 }
 
-export function InfoTooltip({ title, children }: InfoTooltipProps) {
+export function InfoTooltip({
+  title,
+  children
+}: InfoTooltipProps): JSX.Element {
   return (
     <button type="button" className={styles.trigger} aria-label={title}>
       <InfoIcon />

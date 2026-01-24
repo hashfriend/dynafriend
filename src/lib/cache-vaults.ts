@@ -14,6 +14,7 @@ interface CachedVaultData {
     totalAssets: string
     totalSupply: string
     externalUrl: string
+    apy: number | null
   }[]
 }
 
@@ -28,6 +29,7 @@ export interface VaultDataCache {
   totalAssets: bigint
   totalSupply: bigint
   externalUrl: string
+  apy: number | null
 }
 
 export interface VaultCacheResult {

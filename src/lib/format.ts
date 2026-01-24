@@ -52,3 +52,21 @@ export function formatTimeRemaining(ms: number): string {
   const seconds = totalSeconds % 60
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
+
+/**
+ * Format UNIX timestamp as human-readable date
+ */
+export function formatDate(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  })
+}
+
+/**
+ * Shorten a transaction hash for nicer display
+ */
+export function shortenHash(hash: string): string {
+  return `${hash.slice(0, 6)}…${hash.slice(-4)}`
+}

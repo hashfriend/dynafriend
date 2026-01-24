@@ -1,11 +1,12 @@
+import type { JSX } from 'react'
 import { useState } from 'react'
 import { ChevronRightIcon, ExternalLinkIcon } from '@/components/icons'
 import { TxList } from '@/components/VaultCard/TxList'
-import type { UserPosition } from '@/hooks/useUserPositions'
 import type { VaultData } from '@/hooks/useVaultData'
 import { calculateApy } from '@/lib/apy'
 import { toUsdValue } from '@/lib/convert'
 import { formatApy, formatTokenAmount, formatUsd } from '@/lib/format'
+import type { UserPosition } from '@/lib/positions'
 import { Stat } from './Stat'
 import styles from './VaultCard.module.css'
 
@@ -13,10 +14,13 @@ interface VaultCardProps {
   vault: VaultData
   price?: number
   position?: UserPosition
-  projectedApy?: number | null
 }
 
-export function VaultCard({ vault, price, position, projectedApy }: VaultCardProps) {
+export function VaultCard({
+  vault,
+  price,
+  position
+}: VaultCardProps): JSX.Element {
   const [showNative, setShowNative] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -95,7 +99,7 @@ export function VaultCard({ vault, price, position, projectedApy }: VaultCardPro
           <div className={styles.body}>
             <Stat label="Asset" value={vault.assetSymbol} variant="muted" />
             <Stat label="TVL" value={tvlUsd} variant="muted" />
-            <Stat label="APY" value={formatApy(projectedApy ?? null)} variant="muted" />
+            <Stat label="APY" value={formatApy(vault.apy)} variant="muted" />
             {hasPosition && (
               <>
                 <Stat

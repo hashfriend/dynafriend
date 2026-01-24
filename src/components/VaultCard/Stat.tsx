@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { JSX, ReactNode } from 'react'
 import { Skeleton } from '@/components/Skeleton/Skeleton'
 import styles from './Stat.module.css'
 
@@ -18,7 +18,7 @@ export function Stat({
   variant = 'default',
   isLoading = false,
   onClick
-}: StatProps) {
+}: StatProps): JSX.Element {
   const valueClass =
     variant === 'default' ? styles.value : `${styles.value} ${styles[variant]}`
 

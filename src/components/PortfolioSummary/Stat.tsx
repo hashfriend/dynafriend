@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { JSX, ReactNode } from 'react'
 import { Skeleton } from '@/components/Skeleton/Skeleton'
 import styles from './Stat.module.css'
 
@@ -9,7 +9,12 @@ interface StatProps {
   isProfit?: boolean
 }
 
-export function Stat({ label, value, isLoading, isProfit }: StatProps) {
+export function Stat({
+  label,
+  value,
+  isLoading,
+  isProfit
+}: StatProps): JSX.Element {
   return (
     <div className={styles.stat}>
       <span className={styles.label}>{label}</span>
