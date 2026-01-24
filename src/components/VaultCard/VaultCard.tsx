@@ -13,9 +13,10 @@ interface VaultCardProps {
   vault: VaultData
   price?: number
   position?: UserPosition
+  projectedApy?: number | null
 }
 
-export function VaultCard({ vault, price, position }: VaultCardProps) {
+export function VaultCard({ vault, price, position, projectedApy }: VaultCardProps) {
   const [showNative, setShowNative] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -94,6 +95,7 @@ export function VaultCard({ vault, price, position }: VaultCardProps) {
           <div className={styles.body}>
             <Stat label="Asset" value={vault.assetSymbol} variant="muted" />
             <Stat label="TVL" value={tvlUsd} variant="muted" />
+            <Stat label="APY" value={formatApy(projectedApy ?? null)} variant="muted" />
             {hasPosition && (
               <>
                 <Stat
@@ -113,7 +115,7 @@ export function VaultCard({ vault, price, position }: VaultCardProps) {
                   onClick={price ? toggleDisplay : undefined}
                 />
                 <Stat
-                  label="APY"
+                  label="Your APY"
                   value={formatApy(userApy ?? 0)}
                   variant="profit"
                   isLoading={eventsLoading}

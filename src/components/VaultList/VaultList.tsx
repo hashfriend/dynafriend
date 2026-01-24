@@ -3,6 +3,7 @@ import { SkeletonCard, VaultCard } from '@/components/VaultCard'
 import { VAULT_ADDRESSES } from '@/config/vaults'
 import { useTokenPrices } from '@/hooks/useTokenPrices'
 import { useUserPositions } from '@/hooks/useUserPositions'
+import { useVaultApys } from '@/hooks/useVaultApys'
 import { useVaultData } from '@/hooks/useVaultData'
 import { toUsdValue } from '@/lib/convert'
 import { formatTimeRemaining } from '@/lib/format'
@@ -34,6 +35,7 @@ export function VaultList() {
 
   const { prices } = useTokenPrices(assetAddresses)
   const { positions } = useUserPositions(vaults)
+  const { apys } = useVaultApys(VAULT_ADDRESSES)
 
   const positionsByVault = new Map(positions.map((p) => [p.vaultAddress, p]))
 
@@ -90,6 +92,7 @@ export function VaultList() {
             vault={vault}
             price={prices[vault.assetAddress.toLowerCase()]}
             position={positionsByVault.get(vault.address)}
+            projectedApy={apys[vault.address.toLowerCase()] ?? null}
           />
         ))}
       </div>
