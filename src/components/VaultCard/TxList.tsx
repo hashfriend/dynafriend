@@ -30,11 +30,11 @@ export function TxList({
             const sign = isDeposit ? '+' : '−'
             return (
               <tr key={cf.txHash}>
-                <td>{formatDate(cf.timestamp)}</td>
                 <td className={isDeposit ? styles.deposit : styles.withdraw}>
                   {sign}
                   {formatTokenAmount(absAmount, assetDecimals, 4)} {assetSymbol}
                 </td>
+                <td>{formatDate(cf.timestamp)}</td>
                 <td className={styles.txHash}>
                   <a
                     href={`https://basescan.org/tx/${cf.txHash}`}

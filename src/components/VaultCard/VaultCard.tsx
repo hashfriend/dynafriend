@@ -97,7 +97,7 @@ export function VaultCard({
             <span className={styles.name}>{vault.name}</span>
           </div>
           <div className={styles.body}>
-            <Stat label="Asset" value={vault.assetSymbol} variant="muted" />
+            {/* <Stat label="Asset" value={vault.assetSymbol} variant="muted" /> */}
             <Stat label="TVL" value={tvlUsd} variant="muted" />
             <Stat label="APY" value={formatApy(vault.apy)} variant="muted" />
             {hasPosition && (

@@ -31,6 +31,7 @@
 
 .table .txHash {
   font-family: var(--font-mono);
+  text-align: right;
 }
 
 .link {
