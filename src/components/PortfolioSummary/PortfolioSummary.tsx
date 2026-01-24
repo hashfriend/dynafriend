@@ -1,3 +1,4 @@
+import { useStore } from '@nanostores/react'
 import type { JSX } from 'react'
 import { useMemo } from 'react'
 import { useConnection } from 'wagmi'
@@ -7,10 +8,14 @@ import { useTokenPrices } from '@/hooks/useTokenPrices'
 import { useUserPositions } from '@/hooks/useUserPositions'
 import { useVaultData } from '@/hooks/useVaultData'
 import { formatApy, formatTimeRemaining, formatUsd } from '@/lib/format'
+import { $isPrivate } from '@/stores/privacy'
 import styles from './PortfolioSummary.module.css'
 import { Stat } from './Stat'
 
+const HIDDEN_VALUE = '*****'
+
 export function PortfolioSummary(): JSX.Element {
+  const isPrivate = useStore($isPrivate)
   const { status } = useConnection()
   const isConnected = status === 'connected'
 
@@ -41,12 +46,20 @@ export function PortfolioSummary(): JSX.Element {
       <div className={styles.stats}>
         <Stat
           label="All Positions"
-          value={hasData ? formatUsd(totalValue) : null}
+          value={
+            hasData ? (isPrivate ? HIDDEN_VALUE : formatUsd(totalValue)) : null
+          }
           isLoading={showSkeleton}
         />
         <Stat
           label="Total Profit"
-          value={hasData && profitReady ? formatUsd(totalProfit) : null}
+          value={
+            hasData && profitReady
+              ? isPrivate
+                ? HIDDEN_VALUE
+                : formatUsd(totalProfit)
+              : null
+          }
           isLoading={showSkeleton}
           isProfit
         />

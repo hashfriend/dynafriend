@@ -12,8 +12,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@nanostores/react": "^1.0.0",
     "@rainbow-me/rainbowkit": "2.2.10",
     "@tanstack/react-query": "5.90.20",
+    "nanostores": "^1.1.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "viem": "2.44.4",

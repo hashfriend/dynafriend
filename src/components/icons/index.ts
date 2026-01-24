@@ -1,3 +1,5 @@
 export { ChevronRightIcon } from './ChevronRightIcon'
 export { ExternalLinkIcon } from './ExternalLinkIcon'
+export { EyeIcon } from './EyeIcon'
+export { EyeOffIcon } from './EyeOffIcon'
 export { InfoIcon } from './InfoIcon'

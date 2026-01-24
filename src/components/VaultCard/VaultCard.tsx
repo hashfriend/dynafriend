@@ -1,3 +1,4 @@
+import { useStore } from '@nanostores/react'
 import type { JSX } from 'react'
 import { useState } from 'react'
 import { ChevronRightIcon, ExternalLinkIcon } from '@/components/icons'
@@ -7,8 +8,11 @@ import { calculateApy } from '@/lib/apy'
 import { toUsdValue } from '@/lib/convert'
 import { formatApy, formatTokenAmount, formatUsd } from '@/lib/format'
 import type { UserPosition } from '@/lib/positions'
+import { $isPrivate } from '@/stores/privacy'
 import { Stat } from './Stat'
 import styles from './VaultCard.module.css'
+
+const HIDDEN_VALUE = '*****'
 
 interface VaultCardProps {
   vault: VaultData
@@ -21,6 +25,7 @@ export function VaultCard({
   price,
   position
 }: VaultCardProps): JSX.Element {
+  const isPrivate = useStore($isPrivate)
   const [showNative, setShowNative] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -105,18 +110,26 @@ export function VaultCard({
                 <Stat
                   label="Position"
                   value={
-                    showNative
-                      ? userValueNative
-                      : (userValueUsd ?? userValueNative)
+                    isPrivate
+                      ? HIDDEN_VALUE
+                      : showNative
+                        ? userValueNative
+                        : (userValueUsd ?? userValueNative)
                   }
-                  onClick={price ? toggleDisplay : undefined}
+                  onClick={isPrivate || !price ? undefined : toggleDisplay}
                 />
                 <Stat
                   label="Profit"
-                  value={showNative ? userProfitNative : (userProfitUsd ?? '—')}
+                  value={
+                    isPrivate
+                      ? HIDDEN_VALUE
+                      : showNative
+                        ? userProfitNative
+                        : (userProfitUsd ?? '—')
+                  }
                   variant="profit"
                   isLoading={eventsLoading}
-                  onClick={price ? toggleDisplay : undefined}
+                  onClick={isPrivate || !price ? undefined : toggleDisplay}
                 />
                 <Stat
                   label="Your APY"
