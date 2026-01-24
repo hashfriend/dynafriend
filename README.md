@@ -69,7 +69,13 @@ This handles any deposit/withdrawal pattern correctly, including multiple deposi
 ## Development
 
 ```bash
-cp .env.example .env  # add VITE_ALCHEMY_API_ENDPOINT
+cp .env.example .env
 bun install
 bun dev
+```
+
+```bash
+bun run format
+bun run typecheck
+bun run build
 ```
