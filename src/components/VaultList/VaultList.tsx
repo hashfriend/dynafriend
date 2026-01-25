@@ -6,14 +6,14 @@ import { VAULT_ADDRESSES } from '@/config/vaults'
 import { useCacheTimer } from '@/hooks/useCacheTimer'
 import { toUsdValue } from '@/lib/convert'
 import { formatTimeRemaining } from '@/lib/format'
-import { $positions } from '@/stores/positions'
-import { $prices } from '@/stores/prices'
-import { $vaults, $vaultsCacheExpiresAt } from '@/stores/vaults'
+import { $positions } from '@/stores/portfolio'
+import { $vaultData, $vaultsCacheExpiresAt } from '@/stores/vault-data'
 import styles from './VaultList.module.css'
 
 export function VaultList(): JSX.Element {
-  const { data: vaults = [], loading: isLoading, error } = useStore($vaults)
-  const { data: prices = {} } = useStore($prices)
+  const { data, loading: isLoading, error } = useStore($vaultData)
+  const vaults = data?.vaults ?? []
+  const prices = data?.prices ?? {}
   const positions = useStore($positions)
   const cacheExpiresAt = useStore($vaultsCacheExpiresAt)
   const { timeRemaining, isCacheActive } = useCacheTimer(cacheExpiresAt)

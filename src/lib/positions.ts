@@ -18,92 +18,54 @@ export interface UserPosition {
   cashFlows: { amount: bigint; timestamp: number; txHash: string }[]
 }
 
-/**
- * Extract vault addresses where user has shares
- */
-export function extractVaultsWithPositions(
-  balanceResults: ContractResult[] | undefined,
-  vaultAddresses: Address[]
-): Address[] {
-  if (!balanceResults) return []
-
-  const result: Address[] = []
-  for (let i = 0; i < vaultAddresses.length; i++) {
-    const balanceResult = balanceResults[i]
-    if (
-      balanceResult?.status === 'success' &&
-      (balanceResult.result as bigint) > 0n
-    ) {
-      result.push(vaultAddresses[i])
-    }
-  }
-  return result
-}
-
 interface BuildUserPositionsParams {
-  balanceResults: ContractResult[] | undefined
-  maxWithdrawResults: ContractResult[] | undefined
   vaults: VaultData[]
   eventData: EventData
   vaultsWithPositions: Address[]
-  vaultAddresses: Address[]
+  maxWithdrawMap: Map<Address, bigint>
+  balanceMap: Map<Address, bigint>
 }
 
 /**
  * Build user positions from contract results and event data
  */
 export function buildUserPositions({
-  balanceResults,
-  maxWithdrawResults,
   vaults,
   eventData,
   vaultsWithPositions,
-  vaultAddresses
+  maxWithdrawMap,
+  balanceMap
 }: BuildUserPositionsParams): UserPosition[] {
-  if (!balanceResults || !maxWithdrawResults || vaults.length === 0) {
+  if (vaults.length === 0 || vaultsWithPositions.length === 0) {
     return []
   }
 
-  const eventsReady =
-    vaultsWithPositions.length === 0 || Object.keys(eventData).length > 0
+  const eventsReady = Object.keys(eventData).length > 0
 
   const result: UserPosition[] = []
-  for (let i = 0; i < vaultAddresses.length; i++) {
-    const vault = vaultAddresses[i]
-    const balanceResult = balanceResults[i]
-    const maxWithdrawResult = maxWithdrawResults[i]
+  for (const vault of vaultsWithPositions) {
     const vaultData = vaults.find((v) => v.address === vault)
     const events = eventData[vault]
+    const shares = balanceMap.get(vault) ?? 0n
+    const currentValue = maxWithdrawMap.get(vault) ?? 0n
 
-    if (!vaultData) continue
-
-    const shares =
-      balanceResult?.status === 'success'
-        ? (balanceResult.result as bigint)
-        : 0n
-
-    const currentValue =
-      maxWithdrawResult?.status === 'success'
-        ? (maxWithdrawResult.result as bigint)
-        : 0n
+    if (!vaultData || shares === 0n) continue
 
     const totalDeposited = events?.deposited ?? 0n
     const totalWithdrawn = events?.withdrawn ?? 0n
     const netInvested = totalDeposited - totalWithdrawn
     const profit = eventsReady ? currentValue - netInvested : null
 
-    if (shares > 0n) {
-      result.push({
-        vaultAddress: vault,
-        vaultData,
-        shares,
-        currentValue,
-        totalDeposited,
-        totalWithdrawn,
-        profit,
-        cashFlows: events?.cashFlows ?? []
-      })
-    }
+    result.push({
+      vaultAddress: vault,
+      vaultData,
+      shares,
+      currentValue,
+      totalDeposited,
+      totalWithdrawn,
+      profit,
+      cashFlows: events?.cashFlows ?? []
+    })
   }
 
   return result
@@ -165,12 +127,17 @@ export function buildSummary(
   }
 }
 
+interface BalanceFetchResult {
+  balanceMap: Map<Address, bigint>
+  vaultsWithPositions: Address[]
+}
+
 /**
- * Fetch user balances for all vaults
+ * Fetch user balances for all vaults and determine which have positions
  */
 export async function fetchBalances(
   userAddress: Address
-): Promise<ContractResult[]> {
+): Promise<BalanceFetchResult> {
   const client = getPublicClient()
   const contracts = VAULT_ADDRESSES.map((address) => ({
     address,
@@ -178,21 +145,49 @@ export async function fetchBalances(
     functionName: 'balanceOf' as const,
     args: [userAddress] as const
   }))
-  return client.multicall({ contracts }) as Promise<ContractResult[]>
+  const results = (await client.multicall({ contracts })) as ContractResult[]
+
+  const balanceMap = new Map<Address, bigint>()
+  const vaultsWithPositions: Address[] = []
+
+  for (let i = 0; i < VAULT_ADDRESSES.length; i++) {
+    const result = results[i]
+    if (result.status === 'success') {
+      const balance = result.result as bigint
+      balanceMap.set(VAULT_ADDRESSES[i], balance)
+      if (balance > 0n) {
+        vaultsWithPositions.push(VAULT_ADDRESSES[i])
+      }
+    }
+  }
+
+  return { balanceMap, vaultsWithPositions }
 }
 
 /**
- * Fetch user maxWithdraw for all vaults
+ * Fetch user maxWithdraw for specific vaults
  */
 export async function fetchMaxWithdraw(
-  userAddress: Address
-): Promise<ContractResult[]> {
+  userAddress: Address,
+  vaultAddresses: Address[]
+): Promise<Map<Address, bigint>> {
+  if (vaultAddresses.length === 0) return new Map()
+
   const client = getPublicClient()
-  const contracts = VAULT_ADDRESSES.map((address) => ({
+  const contracts = vaultAddresses.map((address) => ({
     address,
     abi: dynavaultAbi,
     functionName: 'maxWithdraw' as const,
     args: [userAddress] as const
   }))
-  return client.multicall({ contracts }) as Promise<ContractResult[]>
+  const results = (await client.multicall({ contracts })) as ContractResult[]
+
+  const map = new Map<Address, bigint>()
+  for (let i = 0; i < vaultAddresses.length; i++) {
+    const result = results[i]
+    if (result.status === 'success') {
+      map.set(vaultAddresses[i], result.result as bigint)
+    }
+  }
+  return map
 }

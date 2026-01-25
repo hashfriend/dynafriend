@@ -4,11 +4,9 @@ import { useConnection } from 'wagmi'
 import { InfoTooltip } from '@/components/InfoTooltip/InfoTooltip'
 import { useCacheTimer } from '@/hooks/useCacheTimer'
 import { formatApy, formatTimeRemaining, formatUsd } from '@/lib/format'
-import { $eventsCacheExpiresAt } from '@/stores/events'
-import { $positions } from '@/stores/positions'
+import { $positions, $summary } from '@/stores/portfolio'
 import { $isPrivate, HIDDEN_VALUE } from '@/stores/privacy'
-import { $summary } from '@/stores/summary'
-import { $userLoading } from '@/stores/user'
+import { $eventsCacheExpiresAt, $userDataLoading } from '@/stores/user-data'
 import styles from './PortfolioSummary.module.css'
 import { Stat } from './Stat'
 
@@ -18,7 +16,7 @@ export function PortfolioSummary(): JSX.Element {
   const isConnected = status === 'connected'
 
   const positions = useStore($positions)
-  const isLoading = useStore($userLoading)
+  const isLoading = useStore($userDataLoading)
   const { totalValue, totalProfit, profitReady, portfolioApy } =
     useStore($summary)
   const eventsCacheExpiresAt = useStore($eventsCacheExpiresAt)

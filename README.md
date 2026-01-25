@@ -30,14 +30,27 @@ Dashboard for viewing Singularity Finance's DynaVault vault positions.
 All data is centralized in nanostores (`src/stores/`):
 
 ```
-$vaults        → RPC multicall (viem)
-$prices        → DefiLlama API
-$userBalances  → RPC multicall (viem)
-$userEvents    → Alchemy API (only for vaults with positions)
-                 └─ getAssetTransfers → withdrawals
-                 └─ getAssetTransfers + getTransactionReceipt → deposits
-$positions     → computed from $userBalances + $userEvents + $vaults
+$vaultData ─────────────────────────── $userAddress
+     │ (vaults + prices)                     │
+     │                                       │
+     └───────────────┬───────────────────────┘
+                     │
+                     ▼
+               $userData
+               (balances + events)
+                     │
+                     ▼
+               $portfolio
+               (positions + summary)
 ```
+
+**$vaultData** fetches atomically:
+- Vaults → RPC multicall (viem)
+- Prices → DefiLlama API
+
+**$userData** fetches atomically (waits for $vaultData):
+- Balances → RPC multicall (viem)
+- Events → Alchemy API (only for vaults with positions)
 
 Vault data and event data are cached in localStorage for 30 min.
 

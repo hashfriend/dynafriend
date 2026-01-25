@@ -4,7 +4,7 @@ import { useConnection } from 'wagmi'
 import { ConnectButton } from '@/components/ConnectButton/ConnectButton'
 import { PortfolioSummary } from '@/components/PortfolioSummary/PortfolioSummary'
 import { VaultList } from '@/components/VaultList/VaultList'
-import { $userAddress } from '@/stores/user'
+import { $userAddress } from '@/stores/user-data'
 import styles from './App.module.css'
 import { SINGULARITY_FINANCE_URL } from './config/vaults'
 
