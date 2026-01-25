@@ -1,7 +1,4 @@
-interface CashFlowInput {
-  amount: bigint
-  timestamp: number
-}
+import type { CashFlow } from '@/lib/events'
 
 /**
  * Calculate APY using XIRR (Extended Internal Rate of Return).
@@ -14,7 +11,7 @@ interface CashFlowInput {
  * @returns APY as percentage (e.g. 12.5 for 12.5%), or null if insufficient data
  */
 export function calculateApy(
-  cashFlows: CashFlowInput[],
+  cashFlows: CashFlow[],
   currentValue: bigint,
   decimals: number
 ): number | null {

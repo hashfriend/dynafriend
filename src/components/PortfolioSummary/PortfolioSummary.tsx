@@ -1,45 +1,31 @@
 import { useStore } from '@nanostores/react'
 import type { JSX } from 'react'
-import { useMemo } from 'react'
 import { useConnection } from 'wagmi'
 import { InfoTooltip } from '@/components/InfoTooltip/InfoTooltip'
-import { useSummaryData } from '@/hooks/useSummaryData'
-import { useTokenPrices } from '@/hooks/useTokenPrices'
-import { useUserPositions } from '@/hooks/useUserPositions'
-import { useVaultData } from '@/hooks/useVaultData'
+import { useCacheTimer } from '@/hooks/useCacheTimer'
 import { formatApy, formatTimeRemaining, formatUsd } from '@/lib/format'
-import { $isPrivate } from '@/stores/privacy'
+import { $eventsCacheExpiresAt } from '@/stores/events'
+import { $positions } from '@/stores/positions'
+import { $isPrivate, HIDDEN_VALUE } from '@/stores/privacy'
+import { $summary } from '@/stores/summary'
+import { $userLoading } from '@/stores/user'
 import styles from './PortfolioSummary.module.css'
 import { Stat } from './Stat'
-
-const HIDDEN_VALUE = '*****'
 
 export function PortfolioSummary(): JSX.Element {
   const isPrivate = useStore($isPrivate)
   const { status } = useConnection()
   const isConnected = status === 'connected'
 
-  const { vaults } = useVaultData()
+  const positions = useStore($positions)
+  const isLoading = useStore($userLoading)
+  const { totalValue, totalProfit, profitReady, portfolioApy } =
+    useStore($summary)
+  const eventsCacheExpiresAt = useStore($eventsCacheExpiresAt)
+  const { timeRemaining, isCacheActive } = useCacheTimer(eventsCacheExpiresAt)
 
-  const assetAddresses = useMemo(
-    () => vaults.map((v) => v.assetAddress),
-    [vaults]
-  )
-
-  const { prices } = useTokenPrices(assetAddresses)
-  const { positions, isLoading, cacheExpiresAt } = useUserPositions(vaults)
-
-  const {
-    totalValue,
-    totalProfit,
-    profitReady,
-    portfolioApy,
-    timeRemaining,
-    isCacheActive
-  } = useSummaryData({ positions, prices, cacheExpiresAt })
-
-  const hasData = isConnected && !isLoading && positions.length > 0
-  const showSkeleton = isConnected && (isLoading || positions.length === 0)
+  const hasData = isConnected && positions.length > 0
+  const showSkeleton = isConnected && isLoading && positions.length === 0
 
   return (
     <div className={styles.container}>

@@ -18,7 +18,7 @@ Dashboard for viewing Singularity Finance's DynaVault vault positions.
 
 ## Tech Stack
 
-- React 19 + Vite
+- React 19 + Vite + nanostores
 - TypeScript + CSS modules
 - wagmi v3 + viem + RainbowKit
 - Alchemy API (event fetching)
@@ -27,16 +27,19 @@ Dashboard for viewing Singularity Finance's DynaVault vault positions.
 
 ## Data Flow
 
-- 30-minute client-side caching for event data
+All data is centralized in nanostores (`src/stores/`):
 
 ```
-1. Vault data     → useReadContracts (RPC multicall)
-2. User balances  → useReadContracts (RPC multicall)
-3. Token prices   → DefiLlama API
-4. Profit calc    → Alchemy API (only for vaults with positions)
-                    └─ getAssetTransfers → withdrawals
-                    └─ getAssetTransfers + getTransactionReceipt → deposits
+$vaults        → RPC multicall (viem)
+$prices        → DefiLlama API
+$userBalances  → RPC multicall (viem)
+$userEvents    → Alchemy API (only for vaults with positions)
+                 └─ getAssetTransfers → withdrawals
+                 └─ getAssetTransfers + getTransactionReceipt → deposits
+$positions     → computed from $userBalances + $userEvents + $vaults
 ```
+
+Vault data and event data are cached in localStorage for 30 min.
 
 ## Calculations
 

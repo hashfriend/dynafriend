@@ -1,6 +1,6 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit'
-import { http } from 'viem'
-import { base } from 'wagmi/chains'
+import { createPublicClient, http } from 'viem'
+import { base } from 'viem/chains'
 
 const alchemyEndpoint = import.meta.env.VITE_ALCHEMY_API_ENDPOINT || ''
 const walletConnectProjectId =
@@ -14,3 +14,10 @@ export const config = getDefaultConfig({
     [base.id]: http(alchemyEndpoint)
   }
 })
+
+export function getPublicClient() {
+  return createPublicClient({
+    chain: base,
+    transport: http(alchemyEndpoint)
+  })
+}

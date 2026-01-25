@@ -2,7 +2,7 @@ import { useStore } from '@nanostores/react'
 import type { JSX } from 'react'
 import { ExternalLinkIcon } from '@/components/icons'
 import { formatDate, formatTokenAmount, shortenHash } from '@/lib/format'
-import { $isPrivate } from '@/stores/privacy'
+import { $isPrivate, HIDDEN_VALUE } from '@/stores/privacy'
 import styles from './TxList.module.css'
 
 interface CashFlow {
@@ -16,8 +16,6 @@ interface TxListProps {
   assetDecimals: number
   assetSymbol: string
 }
-
-const HIDDEN_VALUE = '*****'
 
 export function TxList({
   cashFlows,

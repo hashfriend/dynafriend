@@ -1,13 +1,11 @@
 import type { Address } from 'viem'
-import { fetchUserEvents } from '@/lib/alchemy'
-import {
-  type EventData,
-  getCachedEvents,
-  setCachedEvents
-} from '@/lib/cache-events'
-import type { ContractResult, VaultData } from '@/lib/dynavault'
-
-export { CACHE_TTL, type EventData } from '@/lib/cache-events'
+import { dynavaultAbi } from '@/abi/dynavault'
+import { VAULT_ADDRESSES } from '@/config/vaults'
+import { calculateApyFromUsd } from '@/lib/apy'
+import { toUsdValue } from '@/lib/convert'
+import type { ContractResult, VaultData } from '@/lib/dynavaults'
+import type { EventData } from '@/lib/events'
+import { getPublicClient } from './wagmi'
 
 export interface UserPosition {
   vaultAddress: Address
@@ -18,26 +16,6 @@ export interface UserPosition {
   totalWithdrawn: bigint
   profit: bigint | null
   cashFlows: { amount: bigint; timestamp: number; txHash: string }[]
-}
-
-/**
- * Fetch user events with localStorage caching
- */
-export async function fetchEventsWithCache(
-  userAddress: Address,
-  vaults: VaultData[],
-  vaultsWithPositions: Address[]
-): Promise<EventData> {
-  const cached = getCachedEvents(userAddress)
-  if (cached) return cached.data
-
-  const results = await fetchUserEvents(
-    userAddress,
-    vaults,
-    vaultsWithPositions
-  )
-  setCachedEvents(userAddress, results)
-  return results
 }
 
 /**
@@ -129,4 +107,92 @@ export function buildUserPositions({
   }
 
   return result
+}
+
+export interface PortfolioSummary {
+  totalValue: number
+  totalProfit: number
+  profitReady: boolean
+  portfolioApy: number | null
+}
+
+/**
+ * Build portfolio summary from positions and prices
+ */
+export function buildSummary(
+  positions: UserPosition[],
+  prices: Record<string, number>
+): PortfolioSummary {
+  let totalValue = 0
+  let totalProfit = 0
+  let profitReady = true
+  const allCashFlows: { amount: number; timestamp: number }[] = []
+
+  for (const position of positions) {
+    const price = prices[position.vaultData.assetAddress.toLowerCase()]
+    if (!price) continue
+
+    totalValue += toUsdValue(
+      position.currentValue,
+      position.vaultData.assetDecimals,
+      price
+    )
+
+    if (position.profit !== null) {
+      totalProfit += toUsdValue(
+        position.profit,
+        position.vaultData.assetDecimals,
+        price
+      )
+    } else {
+      profitReady = false
+    }
+
+    for (const cf of position.cashFlows) {
+      allCashFlows.push({
+        amount:
+          (Number(cf.amount) / 10 ** position.vaultData.assetDecimals) * price,
+        timestamp: cf.timestamp
+      })
+    }
+  }
+
+  return {
+    totalValue,
+    totalProfit,
+    profitReady,
+    portfolioApy: calculateApyFromUsd(allCashFlows, totalValue)
+  }
+}
+
+/**
+ * Fetch user balances for all vaults
+ */
+export async function fetchBalances(
+  userAddress: Address
+): Promise<ContractResult[]> {
+  const client = getPublicClient()
+  const contracts = VAULT_ADDRESSES.map((address) => ({
+    address,
+    abi: dynavaultAbi,
+    functionName: 'balanceOf' as const,
+    args: [userAddress] as const
+  }))
+  return client.multicall({ contracts }) as Promise<ContractResult[]>
+}
+
+/**
+ * Fetch user maxWithdraw for all vaults
+ */
+export async function fetchMaxWithdraw(
+  userAddress: Address
+): Promise<ContractResult[]> {
+  const client = getPublicClient()
+  const contracts = VAULT_ADDRESSES.map((address) => ({
+    address,
+    abi: dynavaultAbi,
+    functionName: 'maxWithdraw' as const,
+    args: [userAddress] as const
+  }))
+  return client.multicall({ contracts }) as Promise<ContractResult[]>
 }

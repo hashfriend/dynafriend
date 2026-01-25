@@ -3,16 +3,14 @@ import type { JSX } from 'react'
 import { useState } from 'react'
 import { ChevronRightIcon, ExternalLinkIcon } from '@/components/icons'
 import { TxList } from '@/components/VaultCard/TxList'
-import type { VaultData } from '@/hooks/useVaultData'
 import { calculateApy } from '@/lib/apy'
 import { toUsdValue } from '@/lib/convert'
+import type { VaultData } from '@/lib/dynavaults'
 import { formatApy, formatTokenAmount, formatUsd } from '@/lib/format'
 import type { UserPosition } from '@/lib/positions'
-import { $isPrivate } from '@/stores/privacy'
+import { $isPrivate, HIDDEN_VALUE } from '@/stores/privacy'
 import { Stat } from './Stat'
 import styles from './VaultCard.module.css'
-
-const HIDDEN_VALUE = '*****'
 
 interface VaultCardProps {
   vault: VaultData

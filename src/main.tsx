@@ -4,7 +4,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { WagmiProvider } from 'wagmi'
 import { App } from '@/App'
-import { config } from '@/config/wagmi'
+import { config } from '@/lib/wagmi'
 
 import '@rainbow-me/rainbowkit/styles.css'
 import '@/styles/global.css'

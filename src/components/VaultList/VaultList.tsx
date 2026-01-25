@@ -1,40 +1,22 @@
+import { useStore } from '@nanostores/react'
 import type { JSX } from 'react'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { SkeletonCard, VaultCard } from '@/components/VaultCard'
 import { VAULT_ADDRESSES } from '@/config/vaults'
-import { useTokenPrices } from '@/hooks/useTokenPrices'
-import { useUserPositions } from '@/hooks/useUserPositions'
-import { useVaultData } from '@/hooks/useVaultData'
+import { useCacheTimer } from '@/hooks/useCacheTimer'
 import { toUsdValue } from '@/lib/convert'
 import { formatTimeRemaining } from '@/lib/format'
+import { $positions } from '@/stores/positions'
+import { $prices } from '@/stores/prices'
+import { $vaults, $vaultsCacheExpiresAt } from '@/stores/vaults'
 import styles from './VaultList.module.css'
 
 export function VaultList(): JSX.Element {
-  const { vaults, isLoading, error, cacheExpiresAt } = useVaultData()
-
-  // Track time remaining for cache
-  const [timeRemaining, setTimeRemaining] = useState(
-    cacheExpiresAt ? cacheExpiresAt - Date.now() : 0
-  )
-
-  useEffect(() => {
-    if (!cacheExpiresAt) return
-    setTimeRemaining(cacheExpiresAt - Date.now())
-    const interval = setInterval(() => {
-      setTimeRemaining(cacheExpiresAt - Date.now())
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [cacheExpiresAt])
-
-  const isCacheActive = cacheExpiresAt !== null && timeRemaining > 0
-
-  const assetAddresses = useMemo(
-    () => vaults.map((v) => v.assetAddress),
-    [vaults]
-  )
-
-  const { prices } = useTokenPrices(assetAddresses)
-  const { positions } = useUserPositions(vaults)
+  const { data: vaults = [], loading: isLoading, error } = useStore($vaults)
+  const { data: prices = {} } = useStore($prices)
+  const positions = useStore($positions)
+  const cacheExpiresAt = useStore($vaultsCacheExpiresAt)
+  const { timeRemaining, isCacheActive } = useCacheTimer(cacheExpiresAt)
 
   const positionsByVault = new Map(positions.map((p) => [p.vaultAddress, p]))
 
@@ -59,7 +41,7 @@ export function VaultList(): JSX.Element {
     )
   }
 
-  if (isLoading) {
+  if (isLoading && vaults.length === 0) {
     return (
       <div className={styles.container}>
         <h2 className={styles.title}>DynaVaults</h2>

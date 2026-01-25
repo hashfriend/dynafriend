@@ -1,11 +1,15 @@
-import { useQuery } from '@tanstack/react-query'
 import type { Address } from 'viem'
 
 const DEFILLAMA_API = 'https://coins.llama.fi/prices/current'
 
-async function fetchTokenPrices(
+/**
+ * Fetch multiple token prices from DeFiLlama
+ */
+export async function fetchPrices(
   addresses: Address[]
 ): Promise<Record<string, number>> {
+  if (addresses.length === 0) return {}
+
   const uniqueAddresses = [...new Set(addresses.map((a) => a.toLowerCase()))]
   const coins = uniqueAddresses.map((a) => `base:${a}`).join(',')
   const response = await fetch(`${DEFILLAMA_API}/${coins}`)
@@ -20,26 +24,4 @@ async function fetchTokenPrices(
     }
   }
   return priceMap
-}
-
-interface UseTokenPricesResult {
-  prices: Record<string, number>
-  isLoading: boolean
-}
-
-export function useTokenPrices(addresses: Address[]): UseTokenPricesResult {
-  const sortedKey = [...addresses]
-    .map((a) => a.toLowerCase())
-    .sort()
-    .join(',')
-
-  const { data: prices = {}, isLoading } = useQuery({
-    queryKey: ['tokenPrices', sortedKey],
-    queryFn: () => fetchTokenPrices(addresses),
-    enabled: addresses.length > 0,
-    staleTime: 60_000,
-    refetchInterval: 60_000
-  })
-
-  return { prices, isLoading }
 }

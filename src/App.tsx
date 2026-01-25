@@ -1,10 +1,20 @@
 import type { JSX } from 'react'
+import { useEffect } from 'react'
+import { useConnection } from 'wagmi'
 import { ConnectButton } from '@/components/ConnectButton/ConnectButton'
 import { PortfolioSummary } from '@/components/PortfolioSummary/PortfolioSummary'
 import { VaultList } from '@/components/VaultList/VaultList'
+import { $userAddress } from '@/stores/user'
 import styles from './App.module.css'
+import { SINGULARITY_FINANCE_URL } from './config/vaults'
 
 export function App(): JSX.Element {
+  const { address } = useConnection()
+
+  useEffect(() => {
+    $userAddress.set(address ?? null)
+  }, [address])
+
   return (
     <div className={styles.app}>
       <header className={styles.header}>
@@ -18,21 +28,13 @@ export function App(): JSX.Element {
       <footer className={styles.footer}>
         <p>
           Created by{' '}
-          <a
-            href="https://hashfriend.eth.limo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href="https://hashfriend.eth.limo" target="_blank" rel="noopener">
             hashfriend.eth
           </a>
         </p>
         <p>
           Powered by{' '}
-          <a
-            href="https://www.singularityfinance.ai"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href={SINGULARITY_FINANCE_URL} target="_blank" rel="noopener">
             Singularity Finance
           </a>
         </p>
