@@ -29,9 +29,11 @@ function getCachedEvents(userAddress: Address): EventData | null {
 }
 
 const $eventsKey = computed(
-  [$userAddress, $vaultsWithPositions],
-  (address, vaultsWithPositions) => {
-    if (!address || vaultsWithPositions.length === 0) return null
+  [$userAddress, $vaultsWithPositions, $vaults],
+  (address, vaultsWithPositions, vaultsState) => {
+    const vaults = vaultsState.data ?? []
+    if (!address || vaultsWithPositions.length === 0 || vaults.length === 0)
+      return null
     return `${address}-${vaultsWithPositions.length}`
   }
 )
