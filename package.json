@@ -12,12 +12,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@nanostores/persistent": "^1.2.0",
-    "@nanostores/query": "^0.3.4",
-    "@nanostores/react": "^1.0.0",
+    "@nanostores/persistent": "1.2.0",
+    "@nanostores/query": "0.3.4",
+    "@nanostores/react": "1.0.0",
     "@rainbow-me/rainbowkit": "2.2.10",
-    "@tanstack/react-query": "^5.90.20",
-    "nanostores": "^1.1.0",
+    "@tanstack/react-query": "5.90.20",
+    "nanostores": "1.1.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "viem": "2.45.0",
