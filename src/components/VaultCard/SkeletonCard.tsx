@@ -1,5 +1,6 @@
 import type { JSX } from 'react'
 import { Skeleton } from '@/components/Skeleton/Skeleton'
+import stylesStat from './Stat.module.css'
 import styles from './VaultCard.module.css'
 
 export function SkeletonCard(): JSX.Element {
@@ -12,12 +13,12 @@ export function SkeletonCard(): JSX.Element {
             <Skeleton variant="text" />
           </div>
           <div className={styles.body}>
-            <div className={styles.stat}>
-              <span className={styles.statLabel}>Asset</span>
+            <div className={stylesStat.stat}>
+              <span className={stylesStat.label}>Asset</span>
               <Skeleton variant="value" />
             </div>
-            <div className={styles.stat}>
-              <span className={styles.statLabel}>TVL</span>
+            <div className={stylesStat.stat}>
+              <span className={stylesStat.label}>TVL</span>
               <Skeleton variant="value" />
             </div>
           </div>
