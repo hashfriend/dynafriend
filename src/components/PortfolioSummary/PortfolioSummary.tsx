@@ -20,7 +20,8 @@ export function PortfolioSummary(): JSX.Element {
   const { totalValue, totalProfit, profitReady, portfolioApy } =
     useStore($summary)
   const eventsCacheExpiresAt = useStore($eventsCacheExpiresAt)
-  const { timeRemaining, isCacheActive } = useCacheTimer(eventsCacheExpiresAt)
+  const { timeRemaining, isFresh, isStale } =
+    useCacheTimer(eventsCacheExpiresAt)
 
   const hasData = isConnected && positions.length > 0
   const showSkeleton = isConnected && isLoading && positions.length === 0
@@ -52,11 +53,12 @@ export function PortfolioSummary(): JSX.Element {
             <>
               Total APY
               <InfoTooltip title="Your Personal Total APY">
-                Calculated using XIRR (Extended Internal Rate of Return),
-                weighting each deposit and withdrawal by time.
+                Calculated using XIRR, weighting each deposit and withdrawal by
+                time.
                 {isConnected &&
-                  isCacheActive &&
+                  isFresh &&
                   ` Underlying transaction data cached for ${formatTimeRemaining(timeRemaining)} min.`}
+                {isConnected && isStale && ' Refreshing transaction data...'}
               </InfoTooltip>
             </>
           }

@@ -1,11 +1,11 @@
 .trigger {
   all: unset;
-  position: relative;
   margin-left: var(--space-xs);
   cursor: help;
-  font-size: var(--fs--2);
+  font-size: 0.8em;
   vertical-align: middle;
-  color: var(--color-text-dim);
+  color: inherit;
+  opacity: 0.7;
 }
 
 .trigger:hover,
@@ -14,28 +14,18 @@
 }
 
 .tooltip {
-  display: none;
-  position: absolute;
-  bottom: calc(100% + var(--space-xs));
-  left: 50%;
-  transform: translateX(-50%);
   width: max-content;
-  max-width: 220px;
+  max-width: 320px;
   padding: var(--space-sm);
   background: var(--color-bg);
   border: 1px solid var(--color-surface);
-  font-size: var(--fs--2);
+  font-size: var(--fs--1);
   color: var(--color-text-muted);
   text-transform: none;
   letter-spacing: normal;
   line-height: 1.4;
   text-align: left;
   z-index: 10;
-}
-
-.trigger:hover .tooltip,
-.trigger:focus-visible .tooltip {
-  display: block;
 }
 
 .title {

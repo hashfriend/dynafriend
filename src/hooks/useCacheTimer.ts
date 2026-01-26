@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 
 interface CacheTimerResult {
   timeRemaining: number
-  isCacheActive: boolean
+  isFresh: boolean
+  isStale: boolean
 }
 
 export function useCacheTimer(cacheExpiresAt: number | null): CacheTimerResult {
@@ -14,7 +15,7 @@ export function useCacheTimer(cacheExpiresAt: number | null): CacheTimerResult {
       return
     }
 
-    const update = () => {
+    const update = (): void => {
       const remaining = cacheExpiresAt - Date.now()
       setTimeRemaining(Math.max(0, remaining))
     }
@@ -24,8 +25,10 @@ export function useCacheTimer(cacheExpiresAt: number | null): CacheTimerResult {
     return () => clearInterval(interval)
   }, [cacheExpiresAt])
 
+  const hasCache = cacheExpiresAt !== null
   return {
     timeRemaining,
-    isCacheActive: cacheExpiresAt !== null && timeRemaining > 0
+    isFresh: hasCache && timeRemaining > 0,
+    isStale: hasCache && timeRemaining === 0
   }
 }

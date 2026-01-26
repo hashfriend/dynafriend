@@ -3,11 +3,9 @@ import type { JSX } from 'react'
 import { useMemo } from 'react'
 import { SkeletonCard, VaultCard } from '@/components/VaultCard'
 import { VAULT_ADDRESSES } from '@/config/vaults'
-import { useCacheTimer } from '@/hooks/useCacheTimer'
 import { toUsdValue } from '@/lib/convert'
-import { formatTimeRemaining } from '@/lib/format'
 import { $positions } from '@/stores/portfolio'
-import { $vaultData, $vaultsCacheExpiresAt } from '@/stores/vault-data'
+import { $vaultData } from '@/stores/vault-data'
 import styles from './VaultList.module.css'
 
 export function VaultList(): JSX.Element {
@@ -15,8 +13,6 @@ export function VaultList(): JSX.Element {
   const vaults = data?.vaults ?? []
   const prices = data?.prices ?? {}
   const positions = useStore($positions)
-  const cacheExpiresAt = useStore($vaultsCacheExpiresAt)
-  const { timeRemaining, isCacheActive } = useCacheTimer(cacheExpiresAt)
 
   const positionsByVault = new Map(positions.map((p) => [p.vaultAddress, p]))
 
@@ -76,13 +72,6 @@ export function VaultList(): JSX.Element {
           />
         ))}
       </div>
-      {isCacheActive && (
-        <div className={styles.footer}>
-          Vault data cached for {formatTimeRemaining(timeRemaining)} min.
-          <br />
-          Profit data automatically refreshed at least every 30 seconds.
-        </div>
-      )}
     </div>
   )
 }
