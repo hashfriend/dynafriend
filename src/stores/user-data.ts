@@ -87,7 +87,9 @@ export const $userData = createUserDataFetcher<UserDataState | null>(
   ['user-data', $userDataKey],
   {
     cacheLifetime: REVALIDATE_INTERVAL,
-    revalidateInterval: REVALIDATE_INTERVAL
+    revalidateInterval: REVALIDATE_INTERVAL,
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true
   }
 )
 
