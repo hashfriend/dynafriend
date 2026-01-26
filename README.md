@@ -1,6 +1,6 @@
 # DynaFriend
 
-Dashboard for viewing Singularity Finance's DynaVault vault positions.
+Dashboard for viewing Singularity Finance's [DynaVault](https://www.singularityfinance.ai/vaults) positions.
 
 - [Features](#features)
 - [Tech Stack](#tech-stack)
