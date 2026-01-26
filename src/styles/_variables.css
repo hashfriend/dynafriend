@@ -34,3 +34,19 @@
 
   --max-width: 1000px;
 }
+
+:root.light {
+  --color-bg: #fafafa;
+  --color-surface: #efeded;
+
+  --color-text: #1a1a1a;
+  --color-text-muted: #666;
+  --color-text-dim: #888;
+  --color-text-faint: #aaa;
+
+  --color-accent: #e55a2b;
+  --color-accent-hover: #cc4a1f;
+
+  --color-error: #dc2626;
+  --color-profit: #16a34a;
+}

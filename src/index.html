@@ -5,6 +5,16 @@
     <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg"> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DynaFriend</title>
+    <script>
+    ;(() => {
+      var m = matchMedia('(prefers-color-scheme: light)')
+      function s(e) {
+        document.documentElement.classList.toggle('light', e.matches)
+      }
+      s(m)
+      m.addEventListener('change', s)
+    })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
