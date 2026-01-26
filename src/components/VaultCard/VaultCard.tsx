@@ -132,7 +132,6 @@ export function VaultCard({
                 <Stat
                   label="Your APY"
                   value={formatApy(userApy ?? 0)}
-                  variant="profit"
                   isLoading={eventsLoading}
                 />
               </>

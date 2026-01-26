@@ -25,6 +25,8 @@ export function PortfolioSummary(): JSX.Element {
 
   const hasData = isConnected && positions.length > 0
   const showSkeleton = isConnected && isLoading && positions.length === 0
+  const estimatedDailyYield =
+    portfolioApy !== null ? (totalValue * portfolioApy) / 100 / 365 : null
 
   return (
     <div className={styles.container}>
@@ -49,6 +51,18 @@ export function PortfolioSummary(): JSX.Element {
           isProfit
         />
         <Stat
+          label="Est. Daily Yield"
+          value={
+            hasData && estimatedDailyYield !== null
+              ? isPrivate
+                ? HIDDEN_VALUE
+                : formatUsd(estimatedDailyYield)
+              : null
+          }
+          isLoading={showSkeleton}
+          isProfit
+        />
+        <Stat
           label={
             <>
               Total APY
@@ -66,7 +80,6 @@ export function PortfolioSummary(): JSX.Element {
             hasData && portfolioApy !== null ? formatApy(portfolioApy) : null
           }
           isLoading={showSkeleton}
-          isProfit
         />
       </div>
     </div>
