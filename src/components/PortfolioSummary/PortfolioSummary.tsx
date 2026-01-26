@@ -36,7 +36,7 @@ export function PortfolioSummary(): JSX.Element {
           isLoading={showSkeleton}
         />
         <Stat
-          label="Total Profit"
+          label="Total Yield"
           value={
             hasData && profitReady
               ? isPrivate
