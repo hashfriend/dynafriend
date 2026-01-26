@@ -1,9 +1,5 @@
 import type { Address } from 'viem'
-import {
-  getAlchemyEndpoint,
-  getAssetTransfers,
-  getTransactionReceipt
-} from '@/lib/alchemy'
+import { getAssetTransfers, getTransactionReceipt } from '@/lib/alchemy'
 import type { VaultData } from '@/lib/dynavaults'
 
 const DEPOSIT_TOPIC =
@@ -96,24 +92,24 @@ export const eventsEncoder = {
 }
 
 async function fetchVaultEvents(
-  endpoint: string,
-  userLower: string,
+  user: Address,
   vault: Address,
   vaultData: VaultData
 ): Promise<VaultEvents> {
+  const userLower = user.toLowerCase()
   const vaultLower = vault.toLowerCase()
   const assetLower = vaultData.assetAddress.toLowerCase()
   const result: VaultEvents = { deposited: 0n, withdrawn: 0n, cashFlows: [] }
 
   const [withdrawals, sharesIn] = await Promise.all([
-    getAssetTransfers(endpoint, {
+    getAssetTransfers({
       fromAddress: vaultLower,
       toAddress: userLower,
       contractAddresses: [assetLower],
       fromBlock: MIN_EVENT_BLOCK,
       withMetadata: true
     }),
-    getAssetTransfers(endpoint, {
+    getAssetTransfers({
       toAddress: userLower,
       contractAddresses: [vaultLower],
       fromBlock: MIN_EVENT_BLOCK,
@@ -138,7 +134,7 @@ async function fetchVaultEvents(
   )
 
   const receipts = await Promise.all(
-    depositTxs.map((tx) => getTransactionReceipt(endpoint, tx.hash))
+    depositTxs.map((tx) => getTransactionReceipt(tx.hash))
   )
 
   for (let i = 0; i < depositTxs.length; i++) {
@@ -168,13 +164,10 @@ async function fetchVaultEvents(
 
 /** Fetch user events from Alchemy */
 export async function fetchUserEvents(
-  userAddress: Address,
+  user: Address,
   vaults: VaultData[],
   vaultAddresses: Address[]
 ): Promise<EventData> {
-  const endpoint = getAlchemyEndpoint()
-  const userLower = userAddress.toLowerCase()
-
   const vaultDataMap = new Map(vaults.map((v) => [v.address, v]))
 
   const entries = await Promise.all(
@@ -182,12 +175,7 @@ export async function fetchUserEvents(
       const vaultData = vaultDataMap.get(vault)
       if (!vaultData)
         return [vault, { deposited: 0n, withdrawn: 0n, cashFlows: [] }] as const
-      const events = await fetchVaultEvents(
-        endpoint,
-        userLower,
-        vault,
-        vaultData
-      )
+      const events = await fetchVaultEvents(user, vault, vaultData)
       return [vault, events] as const
     })
   )

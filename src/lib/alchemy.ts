@@ -25,11 +25,16 @@ interface ReceiptResponse {
   }
 }
 
-async function fetchAlchemy<T>(
-  endpoint: string,
-  method: string,
-  params: unknown[]
-): Promise<T> {
+export function getAlchemyEndpoint(): string {
+  const endpoint = import.meta.env.VITE_ALCHEMY_API_ENDPOINT
+  if (!endpoint) {
+    throw new Error('VITE_ALCHEMY_API_ENDPOINT not configured')
+  }
+  return endpoint
+}
+
+async function fetchAlchemy<T>(method: string, params: unknown[]): Promise<T> {
+  const endpoint = getAlchemyEndpoint()
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -43,26 +48,14 @@ async function fetchAlchemy<T>(
   return response.json()
 }
 
-export function getAlchemyEndpoint(): string {
-  const endpoint = import.meta.env.VITE_ALCHEMY_API_ENDPOINT
-  if (!endpoint) {
-    throw new Error('VITE_ALCHEMY_API_ENDPOINT not configured')
-  }
-  return endpoint
-}
-
-export async function getAssetTransfers(
-  endpoint: string,
-  params: {
-    fromAddress?: string
-    toAddress?: string
-    contractAddresses: string[]
-    fromBlock?: string
-    withMetadata?: boolean
-  }
-): Promise<AlchemyTransfer[]> {
+export async function getAssetTransfers(params: {
+  fromAddress?: string
+  toAddress?: string
+  contractAddresses: string[]
+  fromBlock?: string
+  withMetadata?: boolean
+}): Promise<AlchemyTransfer[]> {
   const response = await fetchAlchemy<AlchemyResponse>(
-    endpoint,
     'alchemy_getAssetTransfers',
     [
       {
@@ -76,11 +69,9 @@ export async function getAssetTransfers(
 }
 
 export async function getTransactionReceipt(
-  endpoint: string,
   txHash: string
 ): Promise<ReceiptLog[]> {
   const response = await fetchAlchemy<ReceiptResponse>(
-    endpoint,
     'eth_getTransactionReceipt',
     [txHash]
   )

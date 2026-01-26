@@ -8,8 +8,6 @@ import {
 import { $userData } from './user-data'
 import { $vaultData } from './vault-data'
 
-export type { PortfolioSummary, UserPosition } from '@/lib/positions'
-
 export interface PortfolioState {
   positions: UserPosition[]
   summary: PortfolioSummary

@@ -1,8 +1,9 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit'
 import { createPublicClient, http } from 'viem'
 import { base } from 'viem/chains'
+import { getAlchemyEndpoint } from './alchemy'
 
-const alchemyEndpoint = import.meta.env.VITE_ALCHEMY_API_ENDPOINT || ''
+const alchemyEndpoint = getAlchemyEndpoint()
 const walletConnectProjectId =
   import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || ''
 
