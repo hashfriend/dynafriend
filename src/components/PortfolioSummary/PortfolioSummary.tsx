@@ -1,6 +1,6 @@
 import { useStore } from '@nanostores/react'
 import type { JSX } from 'react'
-import { useConnection } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { InfoTooltip } from '@/components/InfoTooltip/InfoTooltip'
 import { useCacheTimer } from '@/hooks/useCacheTimer'
 import { formatApy, formatTimeRemaining, formatUsd } from '@/lib/format'
@@ -12,7 +12,7 @@ import { Stat } from './Stat'
 
 export function PortfolioSummary(): JSX.Element {
   const isPrivate = useStore($isPrivate)
-  const { status } = useConnection()
+  const { status } = useAccount()
   const isConnected = status === 'connected'
 
   const positions = useStore($positions)

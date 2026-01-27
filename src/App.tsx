@@ -1,6 +1,6 @@
 import type { JSX } from 'react'
 import { useEffect } from 'react'
-import { useConnection } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { ConnectButton } from '@/components/ConnectButton/ConnectButton'
 import { PortfolioSummary } from '@/components/PortfolioSummary/PortfolioSummary'
 import { VaultList } from '@/components/VaultList/VaultList'
@@ -9,7 +9,7 @@ import styles from './App.module.css'
 import { SINGULARITY_FINANCE_URL } from './config/vaults'
 
 export function App(): JSX.Element {
-  const { address } = useConnection()
+  const { address } = useAccount()
 
   useEffect(() => {
     $userAddress.set(address ?? null)

@@ -21,8 +21,8 @@
     "nanostores": "1.1.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "viem": "2.45.0",
-    "wagmi": "3.4.1"
+    "viem": "2.38.0",
+    "wagmi": "2.19.3"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.13",

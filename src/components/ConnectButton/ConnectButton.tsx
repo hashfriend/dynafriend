@@ -1,11 +1,11 @@
 import { ConnectButton as RainbowConnectButton } from '@rainbow-me/rainbowkit'
 import type { JSX } from 'react'
-import { useConnection } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { PrivacyToggle } from '@/components/PrivacyToggle/PrivacyToggle'
 import styles from './ConnectButton.module.css'
 
 export function ConnectButton(): JSX.Element {
-  const { status } = useConnection()
+  const { status } = useAccount()
   const isConnected = status === 'connected'
 
   return (
