@@ -71,11 +71,35 @@ export function buildUserPositions({
   return result
 }
 
+export type YieldPeriod = 'daily' | 'weekly' | 'monthly'
+
+const DAYS_PER_PERIOD: Record<YieldPeriod, number> = {
+  daily: 1,
+  weekly: 7,
+  monthly: 30
+}
+
 export interface PortfolioSummary {
   totalValue: number
   totalProfit: number
   profitReady: boolean
   portfolioApy: number | null
+  estimatedYield: number | null
+  yieldPeriod: YieldPeriod
+}
+
+/**
+ * Calculate estimated yield for a given period based on APY.
+ * Uses simple interest approximation: (value * apy / 100) * (days / 365)
+ */
+export function calculateEstimatedYield(
+  totalValue: number,
+  apy: number | null,
+  period: YieldPeriod
+): number | null {
+  if (apy === null) return null
+  const days = DAYS_PER_PERIOD[period]
+  return (totalValue * apy * days) / 100 / 365
 }
 
 /**
@@ -83,7 +107,8 @@ export interface PortfolioSummary {
  */
 export function buildSummary(
   positions: UserPosition[],
-  prices: Record<string, number>
+  prices: Record<string, number>,
+  yieldPeriod: YieldPeriod
 ): PortfolioSummary {
   let totalValue = 0
   let totalProfit = 0
@@ -119,11 +144,19 @@ export function buildSummary(
     }
   }
 
+  const portfolioApy = calculateApyFromUsd(allCashFlows, totalValue)
+
   return {
     totalValue,
     totalProfit,
     profitReady,
-    portfolioApy: calculateApyFromUsd(allCashFlows, totalValue)
+    portfolioApy,
+    estimatedYield: calculateEstimatedYield(
+      totalValue,
+      portfolioApy,
+      yieldPeriod
+    ),
+    yieldPeriod
   }
 }
 

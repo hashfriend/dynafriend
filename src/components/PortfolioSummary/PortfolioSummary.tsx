@@ -4,11 +4,17 @@ import { useAccount } from 'wagmi'
 import { InfoTooltip } from '@/components/InfoTooltip/InfoTooltip'
 import { useCacheTimer } from '@/hooks/useCacheTimer'
 import { formatApy, formatTimeRemaining, formatUsd } from '@/lib/format'
-import { $positions, $summary } from '@/stores/portfolio'
+import { $positions, $summary, cycleYieldPeriod } from '@/stores/portfolio'
 import { $isPrivate, HIDDEN_VALUE } from '@/stores/privacy'
 import { $eventsCacheExpiresAt, $userDataLoading } from '@/stores/user-data'
 import styles from './PortfolioSummary.module.css'
 import { Stat } from './Stat'
+
+const PERIOD_LABELS = {
+  daily: 'Daily',
+  weekly: 'Weekly',
+  monthly: 'Monthly'
+} as const
 
 export function PortfolioSummary(): JSX.Element {
   const isPrivate = useStore($isPrivate)
@@ -17,16 +23,20 @@ export function PortfolioSummary(): JSX.Element {
 
   const positions = useStore($positions)
   const isLoading = useStore($userDataLoading)
-  const { totalValue, totalProfit, profitReady, portfolioApy } =
-    useStore($summary)
+  const {
+    totalValue,
+    totalProfit,
+    profitReady,
+    portfolioApy,
+    estimatedYield,
+    yieldPeriod
+  } = useStore($summary)
   const eventsCacheExpiresAt = useStore($eventsCacheExpiresAt)
   const { timeRemaining, isFresh, isStale } =
     useCacheTimer(eventsCacheExpiresAt)
 
   const hasData = isConnected && positions.length > 0
   const showSkeleton = isConnected && isLoading && positions.length === 0
-  const estimatedDailyYield =
-    portfolioApy !== null ? (totalValue * portfolioApy) / 100 / 365 : null
 
   return (
     <div className={styles.container}>
@@ -51,12 +61,24 @@ export function PortfolioSummary(): JSX.Element {
           isProfit
         />
         <Stat
-          label="Est. Daily Yield"
+          label={
+            <>
+              Est.{' '}
+              <button
+                type="button"
+                className={styles.periodToggle}
+                onClick={cycleYieldPeriod}
+              >
+                {PERIOD_LABELS[yieldPeriod]}
+              </button>{' '}
+              Yield
+            </>
+          }
           value={
-            hasData && estimatedDailyYield !== null
+            hasData && estimatedYield !== null
               ? isPrivate
                 ? HIDDEN_VALUE
-                : formatUsd(estimatedDailyYield)
+                : formatUsd(estimatedYield)
               : null
           }
           isLoading={showSkeleton}

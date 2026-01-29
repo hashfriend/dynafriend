@@ -1,9 +1,11 @@
+import { persistentAtom } from '@nanostores/persistent'
 import { computed } from 'nanostores'
 import {
   buildSummary,
   buildUserPositions,
   type PortfolioSummary,
-  type UserPosition
+  type UserPosition,
+  type YieldPeriod
 } from '@/lib/positions'
 import { $userData } from './user-data'
 import { $vaultData } from './vault-data'
@@ -13,16 +15,20 @@ export interface PortfolioState {
   summary: PortfolioSummary
 }
 
+export const $yieldPeriod = persistentAtom<YieldPeriod>('yield-period', 'daily')
+
 const DEFAULT_SUMMARY: PortfolioSummary = {
   totalValue: 0,
   totalProfit: 0,
   profitReady: true,
-  portfolioApy: null
+  portfolioApy: null,
+  estimatedYield: null,
+  yieldPeriod: 'daily'
 }
 
 export const $portfolio = computed(
-  [$vaultData, $userData],
-  (vaultDataState, userDataState): PortfolioState => {
+  [$vaultData, $userData, $yieldPeriod],
+  (vaultDataState, userDataState, yieldPeriod): PortfolioState => {
     const vaults = vaultDataState.data?.vaults ?? []
     const prices = vaultDataState.data?.prices ?? {}
     const userData = userDataState.data
@@ -39,7 +45,7 @@ export const $portfolio = computed(
       balanceMap: userData.balanceMap
     })
 
-    const summary = buildSummary(positions, prices)
+    const summary = buildSummary(positions, prices, yieldPeriod)
 
     return { positions, summary }
   }
@@ -47,3 +53,10 @@ export const $portfolio = computed(
 
 export const $positions = computed($portfolio, (state) => state.positions)
 export const $summary = computed($portfolio, (state) => state.summary)
+
+export function cycleYieldPeriod(): void {
+  const current = $yieldPeriod.get()
+  const next: YieldPeriod =
+    current === 'daily' ? 'weekly' : current === 'weekly' ? 'monthly' : 'daily'
+  $yieldPeriod.set(next)
+}
