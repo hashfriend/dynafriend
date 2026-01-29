@@ -14,7 +14,7 @@
 
 .value {
   font-size: var(--fs--1);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text);
 }
 
@@ -31,11 +31,12 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  opacity: 0.85;
+  text-decoration: dotted underline;
+  text-decoration-color: var(--color-text-dim);
 }
 
 .clickable:hover {
-  opacity: 1;
+  text-decoration-color: var(--color-text-muted);
 }
 
 @media (width >= 700px) {
