@@ -79,3 +79,4 @@ You are an experienced SENIOR programmer with expert-level knowledge in typescri
 
 - when adding new dependencies, always use their latest versions
 - always pin dependencies to specific versions
+- when running the /update-deps skill, keep `wagmi` on v2.x
