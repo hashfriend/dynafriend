@@ -1,7 +1,12 @@
 import type { Address } from 'viem'
 import { dynavaultAbi } from '@/abi/dynavault'
 import { VAULT_ADDRESSES } from '@/config/vaults'
-import { calculateApyFromUsd } from '@/lib/apy'
+import {
+  calculateApyFromUsd,
+  calculateEstimatedYield,
+  calculateWeightedApy,
+  type YieldPeriod
+} from '@/lib/apy'
 import { toUsdValue } from '@/lib/convert'
 import type { ContractResult, VaultData } from '@/lib/dynavaults'
 import type { EventData } from '@/lib/events'
@@ -71,14 +76,6 @@ export function buildUserPositions({
   return result
 }
 
-export type YieldPeriod = 'daily' | 'weekly' | 'monthly'
-
-const DAYS_PER_PERIOD: Record<YieldPeriod, number> = {
-  daily: 1,
-  weekly: 7,
-  monthly: 30
-}
-
 export interface PortfolioSummary {
   totalValue: number
   totalProfit: number
@@ -86,20 +83,6 @@ export interface PortfolioSummary {
   portfolioApy: number | null
   estimatedYield: number | null
   yieldPeriod: YieldPeriod
-}
-
-/**
- * Calculate estimated yield for a given period based on APY.
- * Uses simple interest approximation: (value * apy / 100) * (days / 365)
- */
-export function calculateEstimatedYield(
-  totalValue: number,
-  apy: number | null,
-  period: YieldPeriod
-): number | null {
-  if (apy === null) return null
-  const days = DAYS_PER_PERIOD[period]
-  return (totalValue * apy * days) / 100 / 365
 }
 
 /**
@@ -114,16 +97,21 @@ export function buildSummary(
   let totalProfit = 0
   let profitReady = true
   const allCashFlows: { amount: number; timestamp: number }[] = []
+  const positionValues: { value: number; apy: number | null }[] = []
 
   for (const position of positions) {
     const price = prices[position.vaultData.assetAddress.toLowerCase()]
     if (!price) continue
 
-    totalValue += toUsdValue(
+    const positionValue = toUsdValue(
       position.currentValue,
       position.vaultData.assetDecimals,
       price
     )
+    totalValue += positionValue
+
+    // Collect position value with vault's 24hr APY for weighted calculation
+    positionValues.push({ value: positionValue, apy: position.vaultData.apy })
 
     if (position.profit !== null) {
       totalProfit += toUsdValue(
@@ -145,6 +133,8 @@ export function buildSummary(
   }
 
   const portfolioApy = calculateApyFromUsd(allCashFlows, totalValue)
+  // Use weighted 24hr APY from vaults for yield projections
+  const weightedApy = calculateWeightedApy(positionValues)
 
   return {
     totalValue,
@@ -153,7 +143,7 @@ export function buildSummary(
     portfolioApy,
     estimatedYield: calculateEstimatedYield(
       totalValue,
-      portfolioApy,
+      weightedApy,
       yieldPeriod
     ),
     yieldPeriod

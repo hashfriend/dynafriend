@@ -1,5 +1,52 @@
 import type { CashFlow } from '@/lib/events'
 
+export type YieldPeriod = 'daily' | 'weekly' | 'monthly'
+
+const DAYS_PER_PERIOD: Record<YieldPeriod, number> = {
+  daily: 1,
+  weekly: 7,
+  monthly: 30
+}
+
+/**
+ * Calculate estimated yield for a given period based on APY.
+ * Uses simple interest approximation: (value * apy / 100) * (days / 365)
+ */
+export function calculateEstimatedYield(
+  totalValue: number,
+  apy: number | null,
+  period: YieldPeriod
+): number | null {
+  if (apy === null) return null
+  const days = DAYS_PER_PERIOD[period]
+  return (totalValue * apy * days) / 100 / 365
+}
+
+interface PositionValue {
+  value: number
+  apy: number | null
+}
+
+/**
+ * Calculate weighted average APY from vault 24-hour APYs.
+ * Each position's APY is weighted by its USD value.
+ */
+export function calculateWeightedApy(
+  positions: PositionValue[]
+): number | null {
+  let totalValue = 0
+  let weightedSum = 0
+
+  for (const { value, apy } of positions) {
+    if (apy === null) continue
+    totalValue += value
+    weightedSum += value * apy
+  }
+
+  if (totalValue === 0) return null
+  return weightedSum / totalValue
+}
+
 /**
  * Calculate APY using XIRR (Extended Internal Rate of Return).
  *

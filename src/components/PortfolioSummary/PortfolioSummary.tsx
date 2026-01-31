@@ -72,6 +72,10 @@ export function PortfolioSummary(): JSX.Element {
                 {PERIOD_LABELS[yieldPeriod]}
               </button>{' '}
               Yield
+              <InfoTooltip>
+                Projected using the vault's 24-hour APY, weighted by your
+                position value in each vault.
+              </InfoTooltip>
             </>
           }
           value={

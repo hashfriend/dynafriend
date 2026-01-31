@@ -12,7 +12,7 @@ import { InfoIcon } from '@/components/icons'
 import styles from './InfoTooltip.module.css'
 
 interface InfoTooltipProps {
-  title: string
+  title?: string
   children: ReactNode
 }
 

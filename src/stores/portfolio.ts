@@ -1,11 +1,11 @@
 import { persistentAtom } from '@nanostores/persistent'
 import { computed } from 'nanostores'
+import type { YieldPeriod } from '@/lib/apy'
 import {
   buildSummary,
   buildUserPositions,
   type PortfolioSummary,
-  type UserPosition,
-  type YieldPeriod
+  type UserPosition
 } from '@/lib/positions'
 import { $userData } from './user-data'
 import { $vaultData } from './vault-data'
