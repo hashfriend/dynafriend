@@ -7,12 +7,8 @@
 
 .stats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-md);
-}
-
-.stats > *:first-child {
-  grid-column: 1 / -1;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-lg);
 }
 
 .periodToggle {
@@ -32,7 +28,7 @@
   text-decoration-color: var(--color-text-muted);
 }
 
-@media (width >= 600px) {
+@media (width >= 700px) {
   .container {
     padding: var(--space-lg);
   }

@@ -10,6 +10,7 @@
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
+  white-space: nowrap;
 }
 
 .value {
@@ -17,6 +18,7 @@
   color: var(--color-text);
   letter-spacing: -0.02em;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .valueMuted {
