@@ -23,6 +23,7 @@
   color: var(--color-text-muted);
   text-transform: none;
   letter-spacing: normal;
+  white-space: normal;
   line-height: 1.4;
   text-align: left;
   z-index: 10;
