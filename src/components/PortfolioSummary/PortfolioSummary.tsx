@@ -6,7 +6,11 @@ import { useCacheTimer } from '@/hooks/useCacheTimer'
 import { formatApy, formatTimeRemaining, formatUsd } from '@/lib/format'
 import { $positions, $summary, cycleYieldPeriod } from '@/stores/portfolio'
 import { $isPrivate, HIDDEN_VALUE } from '@/stores/privacy'
-import { $eventsCacheExpiresAt, $userDataLoading } from '@/stores/user-data'
+import {
+  $eventsCacheExpiresAt,
+  $transactionPending,
+  $userDataLoading
+} from '@/stores/user-data'
 import styles from './PortfolioSummary.module.css'
 import { Stat } from './Stat'
 
@@ -32,8 +36,12 @@ export function PortfolioSummary(): JSX.Element {
     yieldPeriod
   } = useStore($summary)
   const eventsCacheExpiresAt = useStore($eventsCacheExpiresAt)
+  const transactionPending = useStore($transactionPending)
   const { timeRemaining, isFresh, isStale } =
     useCacheTimer(eventsCacheExpiresAt)
+
+  // Show pending when transaction occurred but fresh event data isn't ready
+  const apyPending = transactionPending || isStale
 
   const hasData = isConnected && positions.length > 0
   const showSkeleton = isConnected && isLoading && positions.length === 0
@@ -103,7 +111,11 @@ export function PortfolioSummary(): JSX.Element {
             </>
           }
           value={
-            hasData && portfolioApy !== null ? formatApy(portfolioApy) : null
+            hasData && portfolioApy !== null
+              ? apyPending
+                ? 'pending...'
+                : formatApy(portfolioApy)
+              : null
           }
           isLoading={showSkeleton}
         />

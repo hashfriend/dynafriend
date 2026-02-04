@@ -76,6 +76,8 @@ const [createUserDataFetcher] = nanoquery({
       } else {
         events = await fetchUserEvents(userAddress, vaults, vaultsWithPositions)
         $eventsCache.set({ data: events, cachedAt: Date.now(), userAddress })
+        // Clear pending state since we now have fresh event data
+        $transactionPending.set(false)
       }
     }
 
@@ -104,3 +106,15 @@ export const $eventsCacheExpiresAt = computed(
     return cached.cachedAt + EVENTS_CACHE_TTL
   }
 )
+
+// Track when a new transaction has occurred but events haven't been refreshed yet
+export const $transactionPending = atom<boolean>(false)
+
+/**
+ * Call this when a transaction is confirmed to invalidate the events cache
+ * and mark APY values as pending until fresh data is fetched
+ */
+export function invalidateEventsCache(): void {
+  $eventsCache.set(null)
+  $transactionPending.set(true)
+}

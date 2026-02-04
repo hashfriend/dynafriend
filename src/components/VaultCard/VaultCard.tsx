@@ -3,12 +3,14 @@ import type { JSX } from 'react'
 import { useState } from 'react'
 import { ChevronRightIcon, ExternalLinkIcon } from '@/components/icons'
 import { TxList } from '@/components/VaultCard/TxList'
+import { useCacheTimer } from '@/hooks/useCacheTimer'
 import { calculateApy } from '@/lib/apy'
 import { toUsdValue } from '@/lib/convert'
 import type { VaultData } from '@/lib/dynavaults'
 import { formatApy, formatTokenAmount, formatUsd } from '@/lib/format'
 import type { UserPosition } from '@/lib/positions'
 import { $isPrivate, HIDDEN_VALUE } from '@/stores/privacy'
+import { $eventsCacheExpiresAt, $transactionPending } from '@/stores/user-data'
 import { Stat } from './Stat'
 import styles from './VaultCard.module.css'
 
@@ -24,8 +26,14 @@ export function VaultCard({
   position
 }: VaultCardProps): JSX.Element {
   const isPrivate = useStore($isPrivate)
+  const eventsCacheExpiresAt = useStore($eventsCacheExpiresAt)
+  const transactionPending = useStore($transactionPending)
+  const { isStale } = useCacheTimer(eventsCacheExpiresAt)
   const [showNative, setShowNative] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
+
+  // Show pending when transaction occurred but fresh event data isn't ready
+  const apyPending = transactionPending || isStale
 
   const tvlUsd = price
     ? formatUsd(toUsdValue(vault.totalAssets, vault.assetDecimals, price))
@@ -131,7 +139,7 @@ export function VaultCard({
                 />
                 <Stat
                   label="Your APY"
-                  value={formatApy(userApy ?? 0)}
+                  value={apyPending ? 'pending...' : formatApy(userApy ?? 0)}
                   isLoading={eventsLoading}
                 />
               </>
