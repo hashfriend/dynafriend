@@ -164,67 +164,57 @@ export function buildSummary(
   }
 }
 
-interface BalanceFetchResult {
+export interface UserBalancesResult {
   balanceMap: Map<Address, bigint>
+  maxWithdrawMap: Map<Address, bigint>
   vaultsWithPositions: Address[]
 }
 
 /**
- * Fetch user balances for all vaults and determine which have positions
+ * Fetch balanceOf + maxWithdraw for all vaults in a single multicall
  */
-export async function fetchBalances(
+export async function fetchUserBalances(
   userAddress: Address
-): Promise<BalanceFetchResult> {
+): Promise<UserBalancesResult> {
   const client = getPublicClient()
-  const contracts = VAULT_ADDRESSES.map((address) => ({
-    address,
-    abi: dynavaultAbi,
-    functionName: 'balanceOf' as const,
-    args: [userAddress] as const
-  }))
+  const contracts = VAULT_ADDRESSES.flatMap((address) => [
+    {
+      address,
+      abi: dynavaultAbi,
+      functionName: 'balanceOf' as const,
+      args: [userAddress] as const
+    },
+    {
+      address,
+      abi: dynavaultAbi,
+      functionName: 'maxWithdraw' as const,
+      args: [userAddress] as const
+    }
+  ])
   const results = (await client.multicall({ contracts })) as ContractResult[]
 
   const balanceMap = new Map<Address, bigint>()
+  const maxWithdrawMap = new Map<Address, bigint>()
   const vaultsWithPositions: Address[] = []
 
   for (let i = 0; i < VAULT_ADDRESSES.length; i++) {
-    const result = results[i]
-    if (result.status === 'success') {
-      const balance = result.result as bigint
+    const balanceResult = results[i * 2]
+    const maxWithdrawResult = results[i * 2 + 1]
+
+    if (balanceResult.status === 'success') {
+      const balance = balanceResult.result as bigint
       balanceMap.set(VAULT_ADDRESSES[i], balance)
       if (balance > 0n) {
         vaultsWithPositions.push(VAULT_ADDRESSES[i])
+        if (maxWithdrawResult.status === 'success') {
+          maxWithdrawMap.set(
+            VAULT_ADDRESSES[i],
+            maxWithdrawResult.result as bigint
+          )
+        }
       }
     }
   }
 
-  return { balanceMap, vaultsWithPositions }
-}
-
-/**
- * Fetch user maxWithdraw for specific vaults
- */
-export async function fetchMaxWithdraw(
-  userAddress: Address,
-  vaultAddresses: Address[]
-): Promise<Map<Address, bigint>> {
-  if (vaultAddresses.length === 0) return new Map()
-
-  const client = getPublicClient()
-  const contracts = vaultAddresses.map((address) => ({
-    address,
-    abi: dynavaultAbi,
-    functionName: 'maxWithdraw' as const,
-    args: [userAddress] as const
-  }))
-  const results = (await client.multicall({ contracts })) as ContractResult[]
-
-  const map = new Map<Address, bigint>()
-  for (let i = 0; i < vaultAddresses.length; i++) {
-    const result = results[i]
-    if (result.status === 'success') {
-      map.set(vaultAddresses[i], result.result as bigint)
-    }
-  }
-  return map
+  return { balanceMap, maxWithdrawMap, vaultsWithPositions }
 }

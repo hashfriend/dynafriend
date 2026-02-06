@@ -11,14 +11,17 @@ export const config = getDefaultConfig({
   appName: 'DynaFriend',
   projectId: walletConnectProjectId,
   chains: [base],
+  pollingInterval: 30_000,
   transports: {
-    [base.id]: http(alchemyEndpoint)
+    [base.id]: http(alchemyEndpoint, { batch: true })
   }
 })
 
+const publicClient = createPublicClient({
+  chain: base,
+  transport: http(alchemyEndpoint, { batch: true })
+})
+
 export function getPublicClient() {
-  return createPublicClient({
-    chain: base,
-    transport: http(alchemyEndpoint)
-  })
+  return publicClient
 }

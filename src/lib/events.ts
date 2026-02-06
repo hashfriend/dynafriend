@@ -162,23 +162,23 @@ async function fetchVaultEvents(
   return result
 }
 
-/** Fetch user events from Alchemy */
+/** Fetch user events from Alchemy (sequential to avoid rate limits) */
 export async function fetchUserEvents(
   user: Address,
   vaults: VaultData[],
   vaultAddresses: Address[]
 ): Promise<EventData> {
   const vaultDataMap = new Map(vaults.map((v) => [v.address, v]))
+  const result: EventData = {}
 
-  const entries = await Promise.all(
-    vaultAddresses.map(async (vault) => {
-      const vaultData = vaultDataMap.get(vault)
-      if (!vaultData)
-        return [vault, { deposited: 0n, withdrawn: 0n, cashFlows: [] }] as const
-      const events = await fetchVaultEvents(user, vault, vaultData)
-      return [vault, events] as const
-    })
-  )
+  for (const vault of vaultAddresses) {
+    const vaultData = vaultDataMap.get(vault)
+    if (!vaultData) {
+      result[vault] = { deposited: 0n, withdrawn: 0n, cashFlows: [] }
+      continue
+    }
+    result[vault] = await fetchVaultEvents(user, vault, vaultData)
+  }
 
-  return Object.fromEntries(entries)
+  return result
 }

@@ -9,14 +9,14 @@ import {
   eventsEncoder,
   fetchUserEvents
 } from '@/lib/events'
-import { fetchBalances, fetchMaxWithdraw } from '@/lib/positions'
+import { fetchUserBalances } from '@/lib/positions'
 import { $vaultData } from './vault-data'
 
 // localStorage cache TTL for events (historical data, changes rarely)
 export const EVENTS_CACHE_TTL = 30 * 60 * 1000 // 30 min
 
 // How often nanoquery calls the fetcher (balances can change frequently)
-const REVALIDATE_INTERVAL = 60_000 // 1 min
+const REVALIDATE_INTERVAL = 120_000 // 2 min
 
 export const $userAddress = atom<Address | null>(null)
 
@@ -60,14 +60,9 @@ const [createUserDataFetcher] = nanoquery({
 
     if (!userAddress || vaults.length === 0) return null
 
-    // Fetch balances first to determine which vaults have active positions
-    const { balanceMap, vaultsWithPositions } = await fetchBalances(userAddress)
-
-    // Fetch maxWithdraw for vaults with active positions
-    const maxWithdrawMap = await fetchMaxWithdraw(
-      userAddress,
-      vaultsWithPositions
-    )
+    // Fetch balances + maxWithdraw in a single multicall
+    const { balanceMap, maxWithdrawMap, vaultsWithPositions } =
+      await fetchUserBalances(userAddress)
 
     // Fetch events for ALL vaults (so we can show historical positions too)
     let events: EventData = {}
