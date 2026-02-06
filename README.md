@@ -20,7 +20,7 @@ Dashboard for viewing Singularity Finance's [DynaVault](https://www.singularityf
 
 - React 19 + Vite + nanostores
 - TypeScript + CSS modules
-- wagmi v3 + viem + RainbowKit
+- wagmi v2 + viem + RainbowKit
 - Alchemy API (event fetching)
 - DefiLlama API (token prices)
 - Bun

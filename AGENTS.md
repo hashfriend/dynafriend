@@ -16,7 +16,7 @@ See [README.md](./README.md) for project architecture and data flow.
 
 ## Constraints
 
-- Keep wagmi on v2.x when updating dependencies
+- Keep wagmi on v2.x when updating dependencies, because of rainbowkit constraints
 - Pin dependencies to specific versions
 - Minimal, surgical changes — no over-engineering
 - If unsure, ask instead of guessing
