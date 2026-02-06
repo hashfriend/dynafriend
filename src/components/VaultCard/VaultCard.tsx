@@ -122,6 +122,7 @@ export function VaultCard({
                         ? userValueNative
                         : (userValueUsd ?? userValueNative)
                   }
+                  hidden={!isActive}
                   onClick={isPrivate || !price ? undefined : toggleDisplay}
                 />
                 <Stat
