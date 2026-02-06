@@ -12,9 +12,11 @@ Dashboard for viewing Singularity Finance's [DynaVault](https://www.singularityf
 
 ## Features
 
-- View all DynaVault vaults with TVL
-- Track personal positions with their profit
-- Show personal, actual APY
+- View all DynaVault vaults with TVL and natively reported APY
+- Track active and exited positions with their yield for each vault
+- View historical events (deposits, withdrawals) for each position
+- Show personal APY based on actual cash flows and current position value (XIRR)
+- Summarize overall portfolio performance across all vaults
 
 ## Tech Stack
 
@@ -45,14 +47,14 @@ $vaultData ───────────────────────
 ```
 
 **$vaultData** fetches atomically:
-- Vaults → RPC multicall (viem)
+- Vaults → RPC multicall
 - Prices → DefiLlama API
 
 **$userData** fetches atomically (waits for $vaultData):
-- Balances → RPC multicall (viem)
-- Events → Alchemy API (only for vaults with positions)
+- Balances → RPC multicall
+- Events → Alchemy API (only for vaults with active or exited positions)
 
-Vault data and event data are cached in localStorage for 30 min.
+Vault data and event data are cached in localStorage for 30 min. Token prices are cached for 5 min.
 
 ## Calculations
 
@@ -69,7 +71,7 @@ Where:
 
 ### Personal APY (XIRR)
 
-APY is calculated using XIRR (Extended Internal Rate of Return), which properly weights each cash flow by time.
+APY is calculated using XIRR (Extended Internal Rate of Return), which properly weights each cash flow by time. This calculation is used in the summary ("Total APY") and for each individual vault position ("Your APY").
 
 ```
 Solve for r where: Σ(cashFlow_i / (1 + r)^years_i) = 0
