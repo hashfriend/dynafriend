@@ -5,6 +5,7 @@ import { SkeletonCard, VaultCard } from '@/components/VaultCard'
 import { VAULT_ADDRESSES } from '@/config/vaults'
 import { toUsdValue } from '@/lib/convert'
 import { $positions } from '@/stores/portfolio'
+import { $userData } from '@/stores/user-data'
 import { $vaultData } from '@/stores/vault-data'
 import styles from './VaultList.module.css'
 
@@ -13,6 +14,8 @@ export function VaultList(): JSX.Element {
   const vaults = data?.vaults ?? []
   const prices = data?.prices ?? {}
   const positions = useStore($positions)
+  const { loading: isUserDataLoading, data: userData } = useStore($userData)
+  const isUserLoading = isUserDataLoading && userData === undefined
 
   const positionsByVault = new Map(positions.map((p) => [p.vaultAddress, p]))
 
@@ -69,6 +72,7 @@ export function VaultList(): JSX.Element {
             vault={vault}
             price={prices[vault.assetAddress.toLowerCase()]}
             position={positionsByVault.get(vault.address)}
+            isUserLoading={isUserLoading}
           />
         ))}
       </div>

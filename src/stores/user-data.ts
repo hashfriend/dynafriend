@@ -102,8 +102,6 @@ export const $userData = createUserDataFetcher<UserDataState | null>(
   }
 )
 
-export const $userDataLoading = computed($userData, (state) => state.loading)
-
 export const $eventsCacheExpiresAt = computed(
   [$eventsCache, $userAddress],
   (cached, userAddress) => {

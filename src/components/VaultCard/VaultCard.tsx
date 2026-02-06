@@ -16,12 +16,14 @@ interface VaultCardProps {
   vault: VaultData
   price?: number
   position?: UserPosition
+  isUserLoading?: boolean
 }
 
 export function VaultCard({
   vault,
   price,
-  position
+  position,
+  isUserLoading
 }: VaultCardProps): JSX.Element {
   const isPrivate = useStore($isPrivate)
   const [showNative, setShowNative] = useState(false)
@@ -35,6 +37,7 @@ export function VaultCard({
   const isActive = hasPosition && position.shares > 0n
   const eventsLoading = hasPosition && position.profit === null
   const hasTxs = hasPosition && position.cashFlows.length > 0
+  const showUserSkeleton = !!isUserLoading && !hasPosition
 
   // Exited position with incomplete event data (missing deposits or withdrawals)
   const incompleteExit =
@@ -111,7 +114,7 @@ export function VaultCard({
             {/* <Stat label="Asset" value={vault.assetSymbol} variant="muted" /> */}
             <Stat label="TVL" value={tvlUsd} variant="muted" />
             <Stat label="APY" value={formatApy(vault.apy)} variant="muted" />
-            {hasPosition && (
+            {(hasPosition || showUserSkeleton) && (
               <>
                 <Stat
                   label="Position"
@@ -122,8 +125,13 @@ export function VaultCard({
                         ? userValueNative
                         : (userValueUsd ?? userValueNative)
                   }
-                  hidden={!isActive}
-                  onClick={isPrivate || !price ? undefined : toggleDisplay}
+                  hidden={hasPosition && !isActive}
+                  isLoading={showUserSkeleton}
+                  onClick={
+                    showUserSkeleton || isPrivate || !price
+                      ? undefined
+                      : toggleDisplay
+                  }
                 />
                 <Stat
                   label="Total Yield"
@@ -137,9 +145,9 @@ export function VaultCard({
                           : (userProfitUsd ?? '—')
                   }
                   variant="profit"
-                  isLoading={eventsLoading}
+                  isLoading={showUserSkeleton || eventsLoading}
                   onClick={
-                    incompleteExit || isPrivate || !price
+                    showUserSkeleton || incompleteExit || isPrivate || !price
                       ? undefined
                       : toggleDisplay
                   }
@@ -147,7 +155,7 @@ export function VaultCard({
                 <Stat
                   label="Your APY"
                   value={incompleteExit ? '—' : formatApy(userApy ?? 0)}
-                  isLoading={eventsLoading}
+                  isLoading={showUserSkeleton || eventsLoading}
                 />
               </>
             )}
