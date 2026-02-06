@@ -86,7 +86,9 @@ export const $vaultData = createVaultDataFetcher<VaultDataState>(
   ['vault-data'],
   {
     cacheLifetime: REVALIDATE_INTERVAL,
-    revalidateInterval: REVALIDATE_INTERVAL
+    revalidateInterval: REVALIDATE_INTERVAL,
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true
   }
 )
 
