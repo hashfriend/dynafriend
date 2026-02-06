@@ -39,34 +39,44 @@ export function VaultCard({
     ? formatUsd(toUsdValue(vault.totalAssets, vault.assetDecimals, price))
     : '—'
 
-  const hasPosition = position && position.shares > 0n
+  const hasPosition = !!position
+  const isActive = hasPosition && position.shares > 0n
   const eventsLoading = hasPosition && position.profit === null
   const hasTxs = hasPosition && position.cashFlows.length > 0
+
+  // Exited position with incomplete event data (missing deposits or withdrawals)
+  const incompleteExit =
+    hasPosition &&
+    !isActive &&
+    position.cashFlows.length > 0 &&
+    (position.totalDeposited === 0n ||
+      position.totalWithdrawn === 0n ||
+      (position.profit !== null && position.profit < 0n))
 
   const toggleDisplay = () => setShowNative((prev) => !prev)
   const toggleExpand = () => setIsExpanded((prev) => !prev)
 
   const userValueUsd =
-    hasPosition && price
+    position && price
       ? formatUsd(toUsdValue(position.currentValue, vault.assetDecimals, price))
       : null
 
-  const userValueNative = hasPosition
+  const userValueNative = position
     ? `${formatTokenAmount(position.currentValue, vault.assetDecimals, 4)} ${vault.assetSymbol}`
     : null
 
   const userProfitUsd =
-    hasPosition && price && position.profit !== null
+    position && price && position.profit !== null
       ? formatUsd(toUsdValue(position.profit, vault.assetDecimals, price))
       : null
 
   const userProfitNative =
-    hasPosition && position.profit !== null
+    position && position.profit !== null
       ? `${formatTokenAmount(position.profit, vault.assetDecimals, 4)} ${vault.assetSymbol}`
       : null
 
   const userApy =
-    hasPosition && position.cashFlows.length > 0
+    position && position.cashFlows.length > 0
       ? calculateApy(
           position.cashFlows,
           position.currentValue,
@@ -75,7 +85,7 @@ export function VaultCard({
       : null
 
   return (
-    <div className={styles.card}>
+    <div className={`${styles.card} ${isActive ? styles.active : ''}`}>
       <div className={styles.main}>
         {hasTxs && (
           <button
@@ -92,9 +102,7 @@ export function VaultCard({
         )}
         <div className={styles.content}>
           <div className={styles.header}>
-            <h3
-              className={`${styles.symbol} ${hasPosition ? styles.hasPosition : ''}`}
-            >
+            <h3 className={styles.symbol}>
               <a
                 href={vault.externalUrl}
                 target="_blank"
@@ -125,21 +133,33 @@ export function VaultCard({
                   onClick={isPrivate || !price ? undefined : toggleDisplay}
                 />
                 <Stat
-                  label="Yield"
+                  label="Total Yield"
                   value={
-                    isPrivate
-                      ? HIDDEN_VALUE
-                      : showNative
-                        ? userProfitNative
-                        : (userProfitUsd ?? '—')
+                    incompleteExit
+                      ? '—'
+                      : isPrivate
+                        ? HIDDEN_VALUE
+                        : showNative
+                          ? userProfitNative
+                          : (userProfitUsd ?? '—')
                   }
                   variant="profit"
                   isLoading={eventsLoading}
-                  onClick={isPrivate || !price ? undefined : toggleDisplay}
+                  onClick={
+                    incompleteExit || isPrivate || !price
+                      ? undefined
+                      : toggleDisplay
+                  }
                 />
                 <Stat
                   label="Your APY"
-                  value={apyPending ? 'pending...' : formatApy(userApy ?? 0)}
+                  value={
+                    incompleteExit
+                      ? '—'
+                      : apyPending
+                        ? 'pending...'
+                        : formatApy(userApy ?? 0)
+                  }
                   isLoading={eventsLoading}
                 />
               </>

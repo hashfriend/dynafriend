@@ -50,24 +50,13 @@ export function PortfolioSummary(): JSX.Element {
     <div className={styles.container}>
       <div className={styles.stats}>
         <Stat
-          label="All Positions"
+          label="Active Positions"
           value={
             hasData ? (isPrivate ? HIDDEN_VALUE : formatUsd(totalValue)) : null
           }
           isLoading={showSkeleton}
         />
-        <Stat
-          label="Total Yield"
-          value={
-            hasData && profitReady
-              ? isPrivate
-                ? HIDDEN_VALUE
-                : formatUsd(totalProfit)
-              : null
-          }
-          isLoading={showSkeleton}
-          isProfit
-        />
+
         <Stat
           label={
             <>
@@ -81,7 +70,7 @@ export function PortfolioSummary(): JSX.Element {
               </button>{' '}
               Yield
               <InfoTooltip>
-                Projected using the vault's 24-hour APY, weighted by your
+                Projected using the vault's 24-hour APY, weighted by your active
                 position value in each vault.
               </InfoTooltip>
             </>
@@ -96,6 +85,28 @@ export function PortfolioSummary(): JSX.Element {
           isLoading={showSkeleton}
           isProfit
         />
+
+        <Stat
+          label={
+            <>
+              Total Yield
+              <InfoTooltip>
+                Combined yield across all vaults, including active and exited
+                positions.
+              </InfoTooltip>
+            </>
+          }
+          value={
+            hasData && profitReady
+              ? isPrivate
+                ? HIDDEN_VALUE
+                : formatUsd(totalProfit)
+              : null
+          }
+          isLoading={showSkeleton}
+          isProfit
+        />
+
         <Stat
           label={
             <>

@@ -2,6 +2,7 @@ import { persistentAtom } from '@nanostores/persistent'
 import { nanoquery } from '@nanostores/query'
 import { atom, computed } from 'nanostores'
 import type { Address } from 'viem'
+import { VAULT_ADDRESSES } from '@/config/vaults'
 import {
   type CachedEvents,
   type EventData,
@@ -24,6 +25,7 @@ export interface UserDataState {
   maxWithdrawMap: Map<Address, bigint>
   events: EventData
   vaultsWithPositions: Address[]
+  vaultsWithHistory: Address[]
 }
 
 const $eventsCache = persistentAtom<CachedEvents | null>(
@@ -58,30 +60,42 @@ const [createUserDataFetcher] = nanoquery({
 
     if (!userAddress || vaults.length === 0) return null
 
-    // Fetch balances first to determine which vaults have positions
+    // Fetch balances first to determine which vaults have active positions
     const { balanceMap, vaultsWithPositions } = await fetchBalances(userAddress)
 
-    // Fetch maxWithdraw for vaults with positions
+    // Fetch maxWithdraw for vaults with active positions
     const maxWithdrawMap = await fetchMaxWithdraw(
       userAddress,
       vaultsWithPositions
     )
 
-    // Fetch events (from cache or network) for vaults with positions
+    // Fetch events for ALL vaults (so we can show historical positions too)
     let events: EventData = {}
-    if (vaultsWithPositions.length > 0) {
-      const cached = getCachedEvents(userAddress)
-      if (cached) {
-        events = cached
-      } else {
-        events = await fetchUserEvents(userAddress, vaults, vaultsWithPositions)
-        $eventsCache.set({ data: events, cachedAt: Date.now(), userAddress })
-        // Clear pending state since we now have fresh event data
-        $transactionPending.set(false)
-      }
+    const cached = getCachedEvents(userAddress)
+    if (cached) {
+      events = cached
+    } else {
+      events = await fetchUserEvents(userAddress, vaults, VAULT_ADDRESSES)
+      $eventsCache.set({ data: events, cachedAt: Date.now(), userAddress })
+      // Clear pending state since we now have fresh event data
+      $transactionPending.set(false)
     }
 
-    return { balanceMap, maxWithdrawMap, events, vaultsWithPositions }
+    // Vaults with history = active positions + vaults with past events
+    const activeSet = new Set(vaultsWithPositions.map((a) => a.toLowerCase()))
+    const vaultsWithHistory = VAULT_ADDRESSES.filter((addr) => {
+      if (activeSet.has(addr.toLowerCase())) return true
+      const vaultEvents = events[addr]
+      return vaultEvents && vaultEvents.cashFlows.length > 0
+    })
+
+    return {
+      balanceMap,
+      maxWithdrawMap,
+      events,
+      vaultsWithPositions,
+      vaultsWithHistory
+    }
   }
 })
 

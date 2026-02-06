@@ -40,7 +40,7 @@ export const $portfolio = computed(
     const positions = buildUserPositions({
       vaults,
       eventData: userData.events,
-      vaultsWithPositions: userData.vaultsWithPositions,
+      vaultsWithHistory: userData.vaultsWithHistory,
       maxWithdrawMap: userData.maxWithdrawMap,
       balanceMap: userData.balanceMap
     })
