@@ -145,11 +145,7 @@ export function VaultCard({
                 />
                 <Stat
                   label="Your APY"
-                  value={
-                    incompleteExit
-                      ? '—'
-                      : formatApy(userApy ?? 0)
-                  }
+                  value={incompleteExit ? '—' : formatApy(userApy ?? 0)}
                   isLoading={eventsLoading}
                 />
               </>

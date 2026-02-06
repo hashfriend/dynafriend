@@ -84,6 +84,9 @@ export function PortfolioSummary(): JSX.Element {
               <InfoTooltip>
                 Combined yield across all vaults, including active and exited
                 positions.
+                {isConnected &&
+                  isFresh &&
+                  ` Underlying transaction data cached for ${formatTimeRemaining(timeRemaining)} min.`}
               </InfoTooltip>
             </>
           }
@@ -112,9 +115,7 @@ export function PortfolioSummary(): JSX.Element {
             </>
           }
           value={
-            hasData && portfolioApy !== null
-              ? formatApy(portfolioApy)
-              : null
+            hasData && portfolioApy !== null ? formatApy(portfolioApy) : null
           }
           isLoading={showSkeleton}
         />
