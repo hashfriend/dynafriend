@@ -1,20 +1,11 @@
 import type { JSX } from 'react'
-import { useEffect } from 'react'
-import { useAccount } from 'wagmi'
 import { ConnectButton } from '@/components/ConnectButton/ConnectButton'
 import { PortfolioSummary } from '@/components/PortfolioSummary/PortfolioSummary'
 import { VaultList } from '@/components/VaultList/VaultList'
-import { $userAddress } from '@/stores/user-data'
 import styles from './App.module.css'
 import { SINGULARITY_FINANCE_URL } from './config/vaults'
 
 export function App(): JSX.Element {
-  const { address } = useAccount()
-
-  useEffect(() => {
-    $userAddress.set(address ?? null)
-  }, [address])
-
   return (
     <div className={styles.app}>
       <header className={styles.header}>

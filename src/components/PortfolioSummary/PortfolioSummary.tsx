@@ -3,10 +3,11 @@ import type { JSX } from 'react'
 import { useAccount } from 'wagmi'
 import { InfoTooltip } from '@/components/InfoTooltip/InfoTooltip'
 import { useCacheTimer } from '@/hooks/useCacheTimer'
+import { usePortfolio } from '@/hooks/usePortfolio'
+import { useUserData } from '@/hooks/useUserData'
 import { formatApy, formatTimeRemaining, formatUsd } from '@/lib/format'
-import { $positions, $summary, cycleYieldPeriod } from '@/stores/portfolio'
+import { cycleYieldPeriod } from '@/stores/preferences'
 import { $isPrivate, HIDDEN_VALUE } from '@/stores/privacy'
-import { $eventsCacheExpiresAt, $userData } from '@/stores/user-data'
 import styles from './PortfolioSummary.module.css'
 import { Stat } from './Stat'
 
@@ -21,8 +22,8 @@ export function PortfolioSummary(): JSX.Element {
   const { status } = useAccount()
   const isConnected = status === 'connected'
 
-  const positions = useStore($positions)
-  const { data: rawUserData } = useStore($userData)
+  const { positions, summary } = usePortfolio()
+  const { isLoading: userLoading, eventsCacheExpiresAt } = useUserData()
   const {
     totalValue,
     totalProfit,
@@ -30,13 +31,11 @@ export function PortfolioSummary(): JSX.Element {
     portfolioApy,
     estimatedYield,
     yieldPeriod
-  } = useStore($summary)
-  const eventsCacheExpiresAt = useStore($eventsCacheExpiresAt)
+  } = summary
   const { timeRemaining, isFresh } = useCacheTimer(eventsCacheExpiresAt)
 
   const hasData = isConnected && positions.length > 0
-  const showSkeleton =
-    isConnected && rawUserData === undefined && positions.length === 0
+  const showSkeleton = isConnected && userLoading && positions.length === 0
 
   return (
     <div className={styles.container}>

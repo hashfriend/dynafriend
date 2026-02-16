@@ -20,41 +20,44 @@ Dashboard for viewing Singularity Finance's [DynaVault](https://www.singularityf
 
 ## Tech Stack
 
-- React 19 + Vite + nanostores
+- React 19 + Vite + React Query
 - TypeScript + CSS modules
 - wagmi v2 + viem + RainbowKit
+- nanostores
 - Alchemy API (event fetching)
 - DefiLlama API (token prices)
 - Bun
 
 ## Data Flow
 
-All data is centralized in nanostores (`src/stores/`):
+Data fetching uses React Query hooks (`src/hooks/`):
 
 ```
-$vaultData ─────────────────────────── $userAddress
+useVaultData ──────────────────────── useAccount (wagmi)
      │ (vaults + prices)                     │
      │                                       │
      └───────────────┬───────────────────────┘
                      │
                      ▼
-               $userData
+               useUserData
                (balances + events)
                      │
                      ▼
-               $portfolio
+               usePortfolio
                (positions + summary)
 ```
 
-**$vaultData** fetches atomically:
-- Vaults → RPC multicall
-- Prices → DefiLlama API
+**useVaultData** fetches atomically:
+- Vaults → RPC multicall (cached 30 min, refetch every 5 min)
+- Prices → DefiLlama API (cached 5 min)
 
-**$userData** fetches atomically (waits for $vaultData):
-- Balances → RPC multicall
-- Events → Alchemy API (only for vaults with active positions)
+**useUserData** fetches atomically (enabled when vaults + wallet are ready):
+- Balances → RPC multicall (refetch every 2 min)
+- Events → Alchemy API, only for vaults with active positions (cached 30 min)
 
-Vault data and event data are cached in localStorage for 30 min. Token prices are cached for 5 min.
+**usePortfolio** is a pure computation hook — `useMemo` over vault + user data to build positions and summary.
+
+UI preferences (`$yieldPeriod`, `$isPrivate`) use nanostores in `src/stores/`.
 
 ## Calculations
 

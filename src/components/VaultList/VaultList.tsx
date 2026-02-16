@@ -1,18 +1,15 @@
-import { useStore } from '@nanostores/react'
 import type { JSX } from 'react'
 import { useMemo } from 'react'
 import { SkeletonCard, VaultCard } from '@/components/VaultCard'
 import { VAULT_ADDRESSES } from '@/config/vaults'
+import { usePortfolio } from '@/hooks/usePortfolio'
+import { useVaultData } from '@/hooks/useVaultData'
 import { toUsdValue } from '@/lib/convert'
-import { $positions } from '@/stores/portfolio'
-import { $vaultData } from '@/stores/vault-data'
 import styles from './VaultList.module.css'
 
 export function VaultList(): JSX.Element {
-  const { data, loading: isLoading, error } = useStore($vaultData)
-  const vaults = data?.vaults ?? []
-  const prices = data?.prices ?? {}
-  const positions = useStore($positions)
+  const { vaults, prices, isLoading, error } = useVaultData()
+  const { positions } = usePortfolio()
   const positionsByVault = new Map(positions.map((p) => [p.vaultAddress, p]))
 
   const sortedVaults = useMemo(() => {

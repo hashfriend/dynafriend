@@ -6,6 +6,7 @@ See [README.md](./README.md) for project architecture and data flow.
 
 1. `bun run format` → must pass
 2. `bun run typecheck` → must pass (warnings OK)
+3. double check existing documentation and potentially update for changes
 
 ## Code Style
 
