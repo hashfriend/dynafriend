@@ -6,7 +6,10 @@
       "WebFetch(domain:base.blockscout.com)",
       "Bash(bun:*)",
       "Bash(cat:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
