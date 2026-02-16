@@ -13,6 +13,15 @@ import { config } from '@/lib/wagmi'
 import '@rainbow-me/rainbowkit/styles.css'
 import '@/styles/global.css'
 
+// One-time migration: clear localStorage caches from nanoquery era
+if (!localStorage.getItem('dynafriend_v2')) {
+  localStorage.removeItem('dynavault_vaults')
+  localStorage.removeItem('dynavault_prices')
+  localStorage.removeItem('dynavault_events')
+  localStorage.removeItem('yield-period')
+  localStorage.setItem('dynafriend_v2', '1')
+}
+
 const queryClient = new QueryClient()
 
 const themeConfig = {
