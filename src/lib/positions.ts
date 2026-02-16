@@ -9,8 +9,39 @@ import {
 } from '@/lib/apy'
 import { toUsdValue } from '@/lib/convert'
 import type { ContractResult, VaultData } from '@/lib/dynavaults'
-import type { EventData } from '@/lib/events'
+import type { CashFlow, EventData } from '@/lib/events'
 import { getPublicClient } from './wagmi'
+
+/**
+ * Filter cash flows to only the current active position period.
+ * When a user fully exits (cumulative withdrawn >= cumulative deposited)
+ * and re-enters, only cash flows from the re-entry are returned.
+ */
+function filterToActivePosition(cashFlows: CashFlow[]): CashFlow[] {
+  if (cashFlows.length === 0) return cashFlows
+
+  let deposited = 0n
+  let withdrawn = 0n
+  let lastExitIndex = -1
+
+  for (let i = 0; i < cashFlows.length; i++) {
+    const cf = cashFlows[i]
+    if (cf.amount < 0n) {
+      deposited += -cf.amount
+    } else {
+      withdrawn += cf.amount
+    }
+
+    if (withdrawn >= deposited && i < cashFlows.length - 1) {
+      lastExitIndex = i
+      deposited = 0n
+      withdrawn = 0n
+    }
+  }
+
+  if (lastExitIndex === -1) return cashFlows
+  return cashFlows.slice(lastExitIndex + 1)
+}
 
 export interface UserPosition {
   vaultAddress: Address
@@ -57,8 +88,16 @@ export function buildUserPositions({
     const shares = balanceMap.get(vault) ?? 0n
     const currentValue = maxWithdrawMap.get(vault) ?? 0n
 
-    const totalDeposited = events?.deposited ?? 0n
-    const totalWithdrawn = events?.withdrawn ?? 0n
+    // Filter to current active period (ignores cash flows before a complete exit)
+    const cashFlows = filterToActivePosition(events?.cashFlows ?? [])
+    const totalDeposited = cashFlows.reduce(
+      (sum, cf) => (cf.amount < 0n ? sum + -cf.amount : sum),
+      0n
+    )
+    const totalWithdrawn = cashFlows.reduce(
+      (sum, cf) => (cf.amount > 0n ? sum + cf.amount : sum),
+      0n
+    )
     const netInvested = totalDeposited - totalWithdrawn
     const profit = eventsReady ? currentValue - netInvested : null
 
@@ -70,7 +109,7 @@ export function buildUserPositions({
       totalDeposited,
       totalWithdrawn,
       profit,
-      cashFlows: events?.cashFlows ?? []
+      cashFlows
     })
   }
 

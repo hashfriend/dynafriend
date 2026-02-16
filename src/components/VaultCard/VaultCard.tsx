@@ -112,7 +112,7 @@ export function VaultCard({
                   onClick={isPrivate || !price ? undefined : toggleDisplay}
                 />
                 <Stat
-                  label="Total Yield"
+                  label="Yield"
                   value={
                     isPrivate
                       ? HIDDEN_VALUE
