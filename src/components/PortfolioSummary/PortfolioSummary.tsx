@@ -83,8 +83,7 @@ export function PortfolioSummary(): JSX.Element {
             <>
               Total Yield
               <InfoTooltip>
-                Combined yield across all vaults, including active and exited
-                positions.
+                Combined yield across all vaults with active positions.
                 {isConnected &&
                   isFresh &&
                   ` Underlying transaction data cached for ${formatTimeRemaining(timeRemaining)} min.`}

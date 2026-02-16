@@ -16,14 +16,12 @@ interface VaultCardProps {
   vault: VaultData
   price?: number
   position?: UserPosition
-  isUserLoading?: boolean
 }
 
 export function VaultCard({
   vault,
   price,
-  position,
-  isUserLoading
+  position
 }: VaultCardProps): JSX.Element {
   const isPrivate = useStore($isPrivate)
   const [showNative, setShowNative] = useState(false)
@@ -34,19 +32,8 @@ export function VaultCard({
     : '—'
 
   const hasPosition = !!position
-  const isActive = hasPosition && position.shares > 0n
   const eventsLoading = hasPosition && position.profit === null
   const hasTxs = hasPosition && position.cashFlows.length > 0
-  const showUserSkeleton = !!isUserLoading && !hasPosition
-
-  // Exited position with incomplete event data (missing deposits or withdrawals)
-  const incompleteExit =
-    hasPosition &&
-    !isActive &&
-    position.cashFlows.length > 0 &&
-    (position.totalDeposited === 0n ||
-      position.totalWithdrawn === 0n ||
-      (position.profit !== null && position.profit < 0n))
 
   const toggleDisplay = () => setShowNative((prev) => !prev)
   const toggleExpand = () => setIsExpanded((prev) => !prev)
@@ -80,7 +67,7 @@ export function VaultCard({
       : null
 
   return (
-    <div className={`${styles.card} ${isActive ? styles.active : ''}`}>
+    <div className={`${styles.card} ${hasPosition ? styles.active : ''}`}>
       <div className={styles.main}>
         {hasTxs && (
           <button
@@ -111,10 +98,7 @@ export function VaultCard({
             <span className={styles.name}>{vault.name}</span>
           </div>
           <div className={styles.body}>
-            {/* <Stat label="Asset" value={vault.assetSymbol} variant="muted" /> */}
-            <Stat label="TVL" value={tvlUsd} variant="muted" />
-            <Stat label="APY" value={formatApy(vault.apy)} variant="muted" />
-            {(hasPosition || showUserSkeleton) && (
+            {hasPosition && (
               <>
                 <Stat
                   label="Position"
@@ -125,40 +109,32 @@ export function VaultCard({
                         ? userValueNative
                         : (userValueUsd ?? userValueNative)
                   }
-                  hidden={hasPosition && !isActive}
-                  isLoading={showUserSkeleton}
-                  onClick={
-                    showUserSkeleton || isPrivate || !price
-                      ? undefined
-                      : toggleDisplay
-                  }
+                  onClick={isPrivate || !price ? undefined : toggleDisplay}
                 />
                 <Stat
                   label="Total Yield"
                   value={
-                    incompleteExit
-                      ? '—'
-                      : isPrivate
-                        ? HIDDEN_VALUE
-                        : showNative
-                          ? userProfitNative
-                          : (userProfitUsd ?? '—')
+                    isPrivate
+                      ? HIDDEN_VALUE
+                      : showNative
+                        ? userProfitNative
+                        : (userProfitUsd ?? '—')
                   }
                   variant="profit"
-                  isLoading={showUserSkeleton || eventsLoading}
-                  onClick={
-                    showUserSkeleton || incompleteExit || isPrivate || !price
-                      ? undefined
-                      : toggleDisplay
-                  }
+                  isLoading={eventsLoading}
+                  onClick={isPrivate || !price ? undefined : toggleDisplay}
                 />
                 <Stat
                   label="Your APY"
-                  value={incompleteExit ? '—' : formatApy(userApy ?? 0)}
-                  isLoading={showUserSkeleton || eventsLoading}
+                  value={formatApy(userApy ?? 0)}
+                  isLoading={eventsLoading}
                 />
               </>
             )}
+            <div className={styles.vaultStats}>
+              <Stat label="TVL" value={tvlUsd} variant="muted" />
+              <Stat label="APY" value={formatApy(vault.apy)} variant="muted" />
+            </div>
           </div>
         </div>
       </div>

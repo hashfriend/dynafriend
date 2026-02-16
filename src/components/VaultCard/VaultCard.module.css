@@ -118,4 +118,12 @@
     gap: var(--space-sm);
     justify-items: end;
   }
+
+  .vaultStats {
+    grid-column: 4 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    gap: var(--space-sm);
+    justify-items: end;
+  }
 }

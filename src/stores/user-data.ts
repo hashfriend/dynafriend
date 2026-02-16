@@ -2,7 +2,6 @@ import { persistentAtom } from '@nanostores/persistent'
 import { nanoquery } from '@nanostores/query'
 import { atom, computed } from 'nanostores'
 import type { Address } from 'viem'
-import { VAULT_ADDRESSES } from '@/config/vaults'
 import {
   type CachedEvents,
   type EventData,
@@ -25,7 +24,6 @@ export interface UserDataState {
   maxWithdrawMap: Map<Address, bigint>
   events: EventData
   vaultsWithPositions: Address[]
-  vaultsWithHistory: Address[]
 }
 
 const $eventsCache = persistentAtom<CachedEvents | null>(
@@ -64,30 +62,21 @@ const [createUserDataFetcher] = nanoquery({
     const { balanceMap, maxWithdrawMap, vaultsWithPositions } =
       await fetchUserBalances(userAddress)
 
-    // Fetch events for ALL vaults (so we can show historical positions too)
+    // Fetch events only for vaults where user has active shares
     let events: EventData = {}
     const cached = getCachedEvents(userAddress)
     if (cached) {
       events = cached
     } else {
-      events = await fetchUserEvents(userAddress, vaults, VAULT_ADDRESSES)
+      events = await fetchUserEvents(userAddress, vaults, vaultsWithPositions)
       $eventsCache.set({ data: events, cachedAt: Date.now(), userAddress })
     }
-
-    // Vaults with history = active positions + vaults with past events
-    const activeSet = new Set(vaultsWithPositions.map((a) => a.toLowerCase()))
-    const vaultsWithHistory = VAULT_ADDRESSES.filter((addr) => {
-      if (activeSet.has(addr.toLowerCase())) return true
-      const vaultEvents = events[addr]
-      return vaultEvents && vaultEvents.cashFlows.length > 0
-    })
 
     return {
       balanceMap,
       maxWithdrawMap,
       events,
-      vaultsWithPositions,
-      vaultsWithHistory
+      vaultsWithPositions
     }
   }
 })

@@ -13,8 +13,8 @@ Dashboard for viewing Singularity Finance's [DynaVault](https://www.singularityf
 ## Features
 
 - View all DynaVault vaults with TVL and natively reported APY
-- Track active and exited positions with their yield for each vault
-- View historical events (deposits, withdrawals) for each position
+- Track active positions with their yield for each vault
+- View historical events (deposits, withdrawals) for each active position
 - Show personal APY based on actual cash flows and current position value (XIRR)
 - Summarize overall portfolio performance across all vaults
 
@@ -52,7 +52,7 @@ $vaultData ───────────────────────
 
 **$userData** fetches atomically (waits for $vaultData):
 - Balances → RPC multicall
-- Events → Alchemy API (only for vaults with active or exited positions)
+- Events → Alchemy API (only for vaults with active positions)
 
 Vault data and event data are cached in localStorage for 30 min. Token prices are cached for 5 min.
 

@@ -9,7 +9,6 @@ interface StatProps {
   value: ReactNode
   variant?: Variant
   isLoading?: boolean
-  hidden?: boolean
   onClick?: () => void
 }
 
@@ -18,7 +17,6 @@ export function Stat({
   value,
   variant = 'default',
   isLoading = false,
-  hidden = false,
   onClick
 }: StatProps): JSX.Element {
   const valueClass =
@@ -27,10 +25,7 @@ export function Stat({
   const isClickable = !!onClick
 
   return (
-    <div
-      className={styles.stat}
-      style={hidden ? { visibility: 'hidden' } : undefined}
-    >
+    <div className={styles.stat}>
       <span className={styles.label}>{label}</span>
       {isClickable ? (
         <button

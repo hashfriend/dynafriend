@@ -26,32 +26,30 @@ export interface UserPosition {
 interface BuildUserPositionsParams {
   vaults: VaultData[]
   eventData: EventData
-  vaultsWithHistory: Address[]
+  activeVaults: Address[]
   maxWithdrawMap: Map<Address, bigint>
   balanceMap: Map<Address, bigint>
 }
 
 /**
- * Build user positions from contract results and event data.
- * Includes both active positions (shares > 0) and exited positions
- * (shares = 0 but have historical events) so users can still see
- * their earned yield and transaction history.
+ * Build user positions from contract results and event data
+ * for vaults where the user has active shares (balance > 0).
  */
 export function buildUserPositions({
   vaults,
   eventData,
-  vaultsWithHistory,
+  activeVaults,
   maxWithdrawMap,
   balanceMap
 }: BuildUserPositionsParams): UserPosition[] {
-  if (vaults.length === 0 || vaultsWithHistory.length === 0) {
+  if (vaults.length === 0 || activeVaults.length === 0) {
     return []
   }
 
   const eventsReady = Object.keys(eventData).length > 0
 
   const result: UserPosition[] = []
-  for (const vault of vaultsWithHistory) {
+  for (const vault of activeVaults) {
     const vaultData = vaults.find((v) => v.address === vault)
     if (!vaultData) continue
 
@@ -115,17 +113,6 @@ export function buildSummary(
 
     // Collect position value with vault's 24hr APY for weighted calculation
     positionValues.push({ value: positionValue, apy: position.vaultData.apy })
-
-    // Skip exited positions with incomplete event data from profit/APY
-    const isExited = position.shares === 0n
-    const hasIncompleteData =
-      isExited &&
-      position.cashFlows.length > 0 &&
-      (position.totalDeposited === 0n ||
-        position.totalWithdrawn === 0n ||
-        (position.profit !== null && position.profit < 0n))
-
-    if (hasIncompleteData) continue
 
     if (position.profit !== null) {
       totalProfit += toUsdValue(
