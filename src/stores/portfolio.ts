@@ -7,7 +7,7 @@ import {
   type PortfolioSummary,
   type UserPosition
 } from '@/lib/positions'
-import { $userData } from './user-data'
+import { $userAddress, $userData } from './user-data'
 import { $vaultData } from './vault-data'
 
 export interface PortfolioState {
@@ -36,13 +36,10 @@ export const $portfolio = computed(
     const userData = userDataState.data
 
     if (!userData || vaults.length === 0) {
-      // If a store lost its data because nanoquery is refetching (e.g. tab
-      // regained focus after cache expired), keep showing the previous
-      // positions instead of flashing skeletons.
-      const isRefetching =
-        (!userData && userDataState.loading) ||
-        (vaults.length === 0 && vaultDataState.loading)
-      if (lastValidState && isRefetching) {
+      // User is still connected but stores temporarily lost data during a
+      // nanoquery refetch (e.g. tab regained focus after cache expired).
+      // Preserve the previous positions instead of flashing empty/skeletons.
+      if (lastValidState && $userAddress.get()) {
         return lastValidState
       }
       lastValidState = null

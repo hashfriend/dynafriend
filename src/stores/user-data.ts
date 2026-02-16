@@ -41,11 +41,19 @@ function getCachedEvents(userAddress: Address): EventData | null {
   return cached.data
 }
 
+// Latch: once vaults have loaded, this stays true so $userDataKey doesn't
+// flip to null during vault refetches (which would reset the $userData store).
+const $vaultsLoaded = atom(false)
+$vaultData.subscribe((state) => {
+  if (!$vaultsLoaded.get() && state.data && state.data.vaults.length > 0) {
+    $vaultsLoaded.set(true)
+  }
+})
+
 const $userDataKey = computed(
-  [$userAddress, $vaultData],
-  (address, vaultDataState) => {
-    const vaults = vaultDataState.data?.vaults ?? []
-    if (!address || vaults.length === 0) return null
+  [$userAddress, $vaultsLoaded],
+  (address, vaultsLoaded) => {
+    if (!address || !vaultsLoaded) return null
     return address
   }
 )
