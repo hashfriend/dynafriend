@@ -26,6 +26,8 @@ const DEFAULT_SUMMARY: PortfolioSummary = {
   yieldPeriod: 'daily'
 }
 
+let lastValidState: PortfolioState | null = null
+
 export const $portfolio = computed(
   [$vaultData, $userData, $yieldPeriod],
   (vaultDataState, userDataState, yieldPeriod): PortfolioState => {
@@ -34,6 +36,16 @@ export const $portfolio = computed(
     const userData = userDataState.data
 
     if (!userData || vaults.length === 0) {
+      // If a store lost its data because nanoquery is refetching (e.g. tab
+      // regained focus after cache expired), keep showing the previous
+      // positions instead of flashing skeletons.
+      const isRefetching =
+        (!userData && userDataState.loading) ||
+        (vaults.length === 0 && vaultDataState.loading)
+      if (lastValidState && isRefetching) {
+        return lastValidState
+      }
+      lastValidState = null
       return { positions: [], summary: DEFAULT_SUMMARY }
     }
 
@@ -46,8 +58,13 @@ export const $portfolio = computed(
     })
 
     const summary = buildSummary(positions, prices, yieldPeriod)
+    const result = { positions, summary }
 
-    return { positions, summary }
+    if (positions.length > 0) {
+      lastValidState = result
+    }
+
+    return result
   }
 )
 
