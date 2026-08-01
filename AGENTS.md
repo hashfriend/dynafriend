@@ -17,7 +17,7 @@ See [README.md](./README.md) for project architecture and data flow.
 
 ## Constraints
 
-- Keep wagmi on v2.x when updating dependencies, because of rainbowkit constraints
+- Keep wagmi on v2.x when updating dependencies. RainbowKit 2.x peers on `wagmi: "^2.9.0"`, and no wagmi 3 compatible RainbowKit is published. Drop this rule once RainbowKit ships a release peering `wagmi: "^3"` — track [discussion #2575](https://github.com/rainbow-me/rainbowkit/discussions/2575). Note that wagmi 3 moved wallet SDKs to peer dependencies, so that upgrade will also require installing connectors explicitly.
 - Pin dependencies to specific versions
 - Minimal, surgical changes — no over-engineering
 - If unsure, ask instead of guessing
