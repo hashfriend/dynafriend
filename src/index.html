@@ -2,22 +2,254 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg"> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DynaFriend</title>
-    <script>
-    ;(() => {
-      var m = matchMedia('(prefers-color-scheme: light)')
-      function s(e) {
-        document.documentElement.classList.toggle('light', e.matches)
+    <meta name="color-scheme" content="light dark">
+    <title>DynaFriend is closed</title>
+    <style>
+    :root {
+      --color-bg: #f7f5ef;
+      --color-surface: #e0ded5;
+      --color-text: #292b25;
+      --color-text-muted: #66695e;
+      --color-accent: #a94b2b;
+      --color-accent-hover: #873a20;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --fs--1: 0.875rem;
+      --fs-0: 1rem;
+      --fs-1: 1.125rem;
+      --space-sm: 0.75rem;
+      --space-md: 1rem;
+      --space-lg: 2rem;
+      --space-xl: 3rem;
+      --max-width: 34rem;
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+    }
+    a {
+      color: var(--color-accent);
+      text-decoration: none;
+    }
+    a:hover {
+      color: var(--color-accent-hover);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-bg: #191a17;
+        --color-surface: #33352e;
+        --color-text: #eeeee7;
+        --color-text-muted: #a9ada0;
+        --color-accent: #eaaa7b;
+        --color-accent-hover: #f5c09a;
       }
-      s(m)
-      m.addEventListener('change', s)
-    })()
-    </script>
+    }
+
+    .app {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      padding-inline: var(--space-lg);
+      font-family: var(--font-sans);
+      background: var(--color-bg);
+    }
+
+    .main {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: auto;
+      padding-block: var(--space-xl);
+    }
+
+    .sunset {
+      display: block;
+      margin: 0 0 var(--space-xl) -0.75rem;
+      color: var(--color-accent);
+    }
+
+    .title {
+      margin: 0 0 var(--space-lg);
+      font-size: clamp(2.125rem, 6vw, 3.25rem);
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -0.055em;
+      text-wrap: balance;
+    }
+
+    .message {
+      max-width: 31rem;
+      color: var(--color-text-muted);
+      font-size: var(--fs-0);
+      line-height: 1.75;
+      text-wrap: pretty;
+    }
+
+    .message p {
+      margin: 0 0 var(--space-md);
+    }
+
+    .backgroundLink {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35em;
+      color: var(--color-accent);
+      font-weight: 500;
+      transition: color 180ms ease;
+    }
+
+    .backgroundLink svg {
+      flex-shrink: 0;
+      transition: transform 180ms ease;
+    }
+
+    .backgroundLink:hover svg {
+      transform: translateX(4px);
+    }
+
+    .backgroundLink:active svg {
+      transform: translateX(2px);
+    }
+
+    .app a:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 6px;
+      border-radius: 2px;
+    }
+
+    .thanks {
+      margin: var(--space-xl) 0 0;
+      color: var(--color-text-muted);
+      font-size: var(--fs--1);
+    }
+
+    .footer {
+      width: 100%;
+      max-width: var(--max-width);
+      margin-inline: auto;
+      padding-block: var(--space-lg);
+      border-top: 1px solid var(--color-surface);
+      color: var(--color-text-muted);
+      font-size: 0.75rem;
+      line-height: 1.75;
+    }
+
+    .footer a {
+      display: inline-block;
+      padding-block: 0.25rem;
+      color: var(--color-text);
+      text-decoration: underline;
+      text-decoration-color: var(--color-surface);
+      text-underline-offset: 0.25em;
+    }
+
+    .footer a:hover {
+      color: var(--color-accent);
+      text-decoration-color: currentColor;
+    }
+
+    @media (width >= 40rem) {
+      .app {
+        padding-inline: var(--space-xl);
+      }
+
+      .main {
+        padding-block: 4rem 5rem;
+      }
+
+      .message {
+        font-size: var(--fs-1);
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .sun {
+        animation: settle 1.2s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+      }
+
+      @keyframes settle {
+        from {
+          opacity: 0;
+          transform: translateY(-8px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .backgroundLink,
+      .backgroundLink svg {
+        transition: none;
+      }
+    }
+    </style>
   </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/main.tsx"></script>
+  <body class="app">
+    <main class="main">
+      <svg
+        class="sunset"
+        width="184"
+        height="112"
+        viewBox="0 0 184 112"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path class="sun" d="M54 74a38 38 0 0 1 76 0Z" fill="currentColor" />
+        <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M30 62a64 64 0 0 1 124 0" opacity=".2" />
+          <path d="M12 80h160" />
+          <path d="M38 92h108" opacity=".5" />
+          <path d="M68 104h48" opacity=".25" />
+        </g>
+      </svg>
+      <h1 class="title">DynaFriend is closed.</h1>
+      <div class="message">
+        <p>
+          We built DynaFriend to help people better understand their DynaVault
+          positions.
+        </p>
+        <p>
+          After the exploit and continued hostility in the Singularity Finance
+          channels, we've decided to shut it down.
+        </p>
+      </div>
+      <a
+        class="backgroundLink"
+        href="https://hashfriend.eth.limo/singularity-finance-exploit/"
+      >
+        Read the full background
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14m-5-5 5 5-5 5" />
+        </svg>
+      </a>
+      <p class="thanks">Thank you to everyone who used it.</p>
+    </main>
+    <footer class="footer">
+      An independent tool by
+      <a href="https://x.com/hashfriend">hashfriend</a>
+    </footer>
   </body>
 </html>
